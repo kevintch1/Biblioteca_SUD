@@ -12,7 +12,7 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
-
+app.use("/api", route);
 
 app.listen(PORT, function () {
     console.log(`servidor corriendo en: http://localhost:${PORT}`);
