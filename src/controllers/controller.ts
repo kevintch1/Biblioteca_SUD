@@ -1,6 +1,12 @@
 import type { Response, Request } from "express";
+
+
+import { query } from "../config/db.js";
+export async fuction getUsers(req: request, res: response){
+
 import { query } from "../config/db.js";
 export async function getLibroAutor(req: Request, res: Response) {
+
     try {
         const { rows } = await query(
             "SELECT * FROM libro_autor ORDER BY id_libro ASC"
