@@ -1,0 +1,21 @@
+// archivo src/routes/prestamosRoute.ts
+import { Router } from "express";
+import {
+  getPrestamos,
+  getPrestamoById,
+  createPrestamo,
+  updatePrestamo,
+  deletePrestamo,
+} from "../controllers/prestamosController.js";
+
+const router = Router();
+
+router.get("/", getPrestamos);
+router.get("/:id", getPrestamoById);
+router.post("/", createPrestamo);
+router.put("/:id", updatePrestamo);
+router.delete("/:id", deletePrestamo);
+
+export default router;
+
+// fin - archivo src/routes/prestamosRoute.ts
