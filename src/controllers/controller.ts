@@ -1,6 +1,7 @@
 import type { Response, Request } from "express";
-import { query } from "../config/db.js";
-/*export async fuction getUsers(req: request, res: response){
+
+/*import { query } from "../config/db.js";
+export async fuction getUsers(req: request, res: response){
     try {
         const { rows } = await query("SELECT * FROM users ORDER BY id ASC");
         response.json(rows);
