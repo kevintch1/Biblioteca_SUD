@@ -13,8 +13,13 @@ const PORT = process.env.PORT || 3000;
 
 app.use(cors());
 app.use(express.json());
+
 app.use("/api/usuarios", usuariosRouter);
 app.use("/api/libros", librosRouter);
+
+
+
+app.use("/api", route);
 
 
 app.listen(PORT, function () {
