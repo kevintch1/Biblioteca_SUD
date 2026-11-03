@@ -1,4 +1,5 @@
 
+
 import type { Request, Response } from "express";
 
 import {
@@ -7,7 +8,16 @@ import {
     deleteLibroAutorModel
 } from "../models/libroAutorModel.js";
 
+import type { Response, Request } from "express";
+
+
+import { query } from "../config/db.js";
+export async fuction getUsers(req: request, res: response){
+
+import { query } from "../config/db.js";
+
 export async function getLibroAutor(req: Request, res: Response) {
+
     try {
         const rows = await getLibroAutorModel();
 
