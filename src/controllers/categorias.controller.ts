@@ -1,5 +1,11 @@
 import type { Request, Response } from "express";
-import { pool } from "../config/db.js";
+import {
+    createCategory as insertCategory,
+    deleteCategory as removeCategory,
+    findAllCategories,
+    findCategoryById,
+    updateCategory as saveCategory,
+} from "../models/categorias.model.js";
 
 type IdParams = { id: string };
 type CategoryBody = { nombre?: unknown };
@@ -36,10 +42,7 @@ async function handleDatabaseError(
 
 export async function getCategories(_req: Request, res: Response): Promise<void> {
     await handleDatabaseError(res, async () => {
-        const { rows } = await pool.query(
-            "SELECT id_categoria, nombre FROM categorias ORDER BY id_categoria",
-        );
-        res.json(rows);
+        res.json(await findAllCategories());
     });
 }
 
@@ -48,15 +51,12 @@ export async function getCategory(req: Request<IdParams>, res: Response): Promis
     if (id === undefined) return;
 
     await handleDatabaseError(res, async () => {
-        const { rows } = await pool.query(
-            "SELECT id_categoria, nombre FROM categorias WHERE id_categoria = $1",
-            [id],
-        );
-        if (rows.length === 0) {
+        const category = await findCategoryById(id);
+        if (!category) {
             res.status(404).json({ error: "Categoría no encontrada." });
             return;
         }
-        res.json(rows[0]);
+        res.json(category);
     });
 }
 
@@ -71,11 +71,7 @@ export async function createCategory(
     }
 
     await handleDatabaseError(res, async () => {
-        const { rows } = await pool.query(
-            "INSERT INTO categorias (nombre) VALUES ($1) RETURNING id_categoria, nombre",
-            [nombre],
-        );
-        res.status(201).json(rows[0]);
+        res.status(201).json(await insertCategory(nombre));
     });
 }
 
@@ -92,15 +88,12 @@ export async function updateCategory(
     }
 
     await handleDatabaseError(res, async () => {
-        const { rows } = await pool.query(
-            "UPDATE categorias SET nombre = $1 WHERE id_categoria = $2 RETURNING id_categoria, nombre",
-            [nombre, id],
-        );
-        if (rows.length === 0) {
+        const category = await saveCategory(id, nombre);
+        if (!category) {
             res.status(404).json({ error: "Categoría no encontrada." });
             return;
         }
-        res.json(rows[0]);
+        res.json(category);
     });
 }
 
@@ -109,11 +102,8 @@ export async function deleteCategory(req: Request<IdParams>, res: Response): Pro
     if (id === undefined) return;
 
     await handleDatabaseError(res, async () => {
-        const { rowCount } = await pool.query(
-            "DELETE FROM categorias WHERE id_categoria = $1",
-            [id],
-        );
-        if (rowCount === 0) {
+        const deletedRows = await removeCategory(id);
+        if (deletedRows === 0) {
             res.status(404).json({ error: "Categoría no encontrada." });
             return;
         }
