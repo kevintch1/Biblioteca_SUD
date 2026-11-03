@@ -7,10 +7,10 @@ import { pool } from '../config/db.js';
 // http://localhost:3000/api/prestamos     1- todos los prestamos (GET):
 // http://localhost:3000/api/prestamos/2   2- Obtener prestamo especifico (GET):
 // http://localhost:3000/api/prestamos     3- Crear un nuevo prestamo (POST):
-//   Body (JSON):json
+//   Body (JSON):
 //   { "id_usuario": 1, "id_ejemplar": 3, "fecha_limite": "2026-11-15"}
 // http://localhost:3000/api/prestamos/2   4- Registra una devolucion / Actualizar (PUT):
-// 	 Body (JSON):json 
+// 	 Body (JSON): 
 //   {"fecha_real_devolucion": "2026-11-02"}
 // http://localhost:3000/api/prestamos/1   5- Eliminar un prestamo (DELETE):
 
@@ -18,7 +18,6 @@ import { pool } from '../config/db.js';
 // READ ALL - OBTENER TODOS LOS PRESTAMOS 
 export const getPrestamos = async (req: Request, res: Response): Promise<void> => {
   try {
-    // Usamos INNER JOIN para traer información útil de los usuarios y libros vinculados
     const sql = `
       SELECT p.id_prestamo, p.fecha_entrega, p.fecha_limite, p.fecha_real_devolucion,
              u.nombre AS usuario_nombre, u.correo AS usuario_correo,
@@ -53,11 +52,18 @@ export const getPrestamoById = async (req: Request, res: Response): Promise<void
     const { rows } = await pool.query(sql, [id]);
     
     if (rows.length === 0) {
-      res.status(404).json({ error: 'Préstamo no encontrado' });
+      res.status(404).json({ error: 'Prestamo no encontrado' });
       return;
     }
     
-    res.json(rows[0]);
+    const prestamo = rows[0];
+
+    // Agregado de propiedad dinámica simplificado
+    if (prestamo.fecha_real_devolucion) {
+      prestamo.mensaje = 'Este préstamo ya ha sido devuelto.';
+    }
+    
+    res.json(prestamo);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Error al obtener el préstamo' });
@@ -74,7 +80,6 @@ export const createPrestamo = async (req: Request, res: Response): Promise<void>
   }
 
   try {
-    // Verificar si el ejemplar existe y si está "Disponible"
     const ejemplarCheck = await pool.query('SELECT estado FROM Ejemplares WHERE id_ejemplar = $1', [id_ejemplar]);
     
     if (ejemplarCheck.rows.length === 0) {
@@ -87,14 +92,12 @@ export const createPrestamo = async (req: Request, res: Response): Promise<void>
       return;
     }
 
-    // Insertar el prestamo (fecha_entrega por defecto es CURRENT_DATE si no se envía)
     const sqlPrestamo = `
       INSERT INTO Prestamos (id_usuario, id_ejemplar, fecha_entrega, fecha_limite) 
       VALUES ($1, $2, COALESCE($3, CURRENT_DATE), $4) 
       RETURNING *`;
-    const { rows } = await pool.query(sqlPrestamo, [id_usuario, id_ejemplar, fecha_entrega, fecha_limite]);
+    const { rows } = await pool.query(sqlPrestamo, [id_usuario, id_ejemplar, fecha_entrega || null, fecha_limite]);
 
-    // Actualizar el estado del ejemplar a 'Prestado'
     await pool.query("UPDATE Ejemplares SET estado = 'Prestado' WHERE id_ejemplar = $1", [id_ejemplar]);
 
     res.status(201).json(rows[0]);
@@ -110,7 +113,6 @@ export const updatePrestamo = async (req: Request, res: Response): Promise<void>
   const { fecha_limite, fecha_real_devolucion } = req.body;
 
   try {
-    // Obtener datos actuales del préstamo antes de actualizar
     const prestamoActual = await pool.query('SELECT id_ejemplar, fecha_real_devolucion FROM Prestamos WHERE id_prestamo = $1', [id]);
     
     if (prestamoActual.rows.length === 0) {
@@ -127,9 +129,8 @@ export const updatePrestamo = async (req: Request, res: Response): Promise<void>
       WHERE id_prestamo = $3 
       RETURNING *`;
       
-    const { rows } = await pool.query(sqlUpdate, [fecha_limite, fecha_real_devolucion, id]);
+    const { rows } = await pool.query(sqlUpdate, [fecha_limite || null, fecha_real_devolucion || null, id]);
 
-    // Si se acaba de registrar la fecha de devolución real y antes no estaba devuelto
     if (fecha_real_devolucion && !devolucionPrevia) {
       await pool.query("UPDATE Ejemplares SET estado = 'Disponible' WHERE id_ejemplar = $1", [id_ejemplar]);
     }
@@ -145,7 +146,6 @@ export const updatePrestamo = async (req: Request, res: Response): Promise<void>
 export const deletePrestamo = async (req: Request, res: Response): Promise<void> => {
   const { id } = req.params;
   try {
-    // Si borramos el préstamo, debemos asegurar el estado del ejemplar involucrado
     const prestamo = await pool.query('SELECT id_ejemplar, fecha_real_devolucion FROM Prestamos WHERE id_prestamo = $1', [id]);
     
     if (prestamo.rows.length === 0) {
@@ -157,7 +157,6 @@ export const deletePrestamo = async (req: Request, res: Response): Promise<void>
 
     await pool.query('DELETE FROM Prestamos WHERE id_prestamo = $1', [id]);
 
-    // Si el préstamo se elimina estando todavía activo (sin devolver), liberamos el libro
     if (!fecha_real_devolucion) {
       await pool.query("UPDATE Ejemplares SET estado = 'Disponible' WHERE id_ejemplar = $1", [id_ejemplar]);
     }
