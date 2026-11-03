@@ -1,10 +1,15 @@
-import type { Response, Request } from "express";
-import { query } from "../config/db.js";
+
+import type { Request, Response } from "express";
+
+import {
+    getLibroAutorModel,
+    createLibroAutorModel,
+    deleteLibroAutorModel
+} from "../models/libroAutorModel.js";
+
 export async function getLibroAutor(req: Request, res: Response) {
     try {
-        const { rows } = await query(
-            "SELECT * FROM libro_autor ORDER BY id_libro ASC"
-        );
+        const rows = await getLibroAutorModel();
 
         res.json(rows);
 
@@ -15,23 +20,16 @@ export async function getLibroAutor(req: Request, res: Response) {
         });
     }
 }
+
 export async function createLibroAutor(req: Request, res: Response) {
     const { id_libro, id_autor } = req.body;
 
     try {
-        const text = `
-            INSERT INTO libro_autor (id_libro, id_autor)
-            VALUES ($1, $2)
-            RETURNING *
-        `;
-
-        const values = [id_libro, id_autor];
-
-        const { rows } = await query(text, values);
+        const data = await createLibroAutorModel(id_libro, id_autor);
 
         res.status(201).json({
             mensaje: "Relación libro-autor creada con éxito",
-            data: rows[0],
+            data,
         });
 
     } catch (error) {
@@ -40,23 +38,18 @@ export async function createLibroAutor(req: Request, res: Response) {
             error: "Error al crear la relación libro-autor",
         });
     }
-};
+}
 
 export async function deleteLibroAutor(req: Request, res: Response) {
     const { id_libro, id_autor } = req.params;
 
     try {
-        const text = `
-            DELETE FROM libro_autor
-            WHERE id_libro = $1 AND id_autor = $2
-            RETURNING *
-        `;
+        const data = await deleteLibroAutorModel(
+            Number(id_libro),
+            Number(id_autor)
+        );
 
-        const values = [id_libro, id_autor];
-
-        const { rows } = await query(text, values);
-
-        if (rows.length === 0) {
+        if (!data) {
             return res.status(404).json({
                 error: "Relación libro-autor no encontrada",
             });
@@ -64,7 +57,7 @@ export async function deleteLibroAutor(req: Request, res: Response) {
 
         res.json({
             mensaje: "Relación libro-autor eliminada con éxito",
-            data: rows[0],
+            data,
         });
 
     } catch (error) {
@@ -73,4 +66,4 @@ export async function deleteLibroAutor(req: Request, res: Response) {
             error: "Error al eliminar la relación libro-autor",
         });
     }
-};
+}
