@@ -1,3 +1,4 @@
+// src/index.ts
 import type { Application, Request, Response } from "express";
 import express from "express";
 import cors from "cors";
@@ -30,3 +31,4 @@ app.use("/api/prestamos", prestamosRouter);
 app.listen(PORT, function () {
     console.log(`server BIBLIOTECA en: http://localhost:${PORT} online`);
 });
+// fin - src/index.ts
