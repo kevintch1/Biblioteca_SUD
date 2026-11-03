@@ -1,11 +1,10 @@
 import type { Request, Response } from "express";
 import { pool } from "../config/db.js";
+import { EjemplarModel } from "../models/ejemplares.model.js";
 
 export async function listarEjemplares(req: Request, res: Response) {
     try {
-        const resultado = await pool.query(
-            "SELECT * FROM ejemplares ORDER BY id_ejemplar ASC"
-        );
+        const resultado = await EjemplarModel.listar();
 
         res.status(200).json(resultado.rows);
     } catch (error) {
@@ -27,10 +26,7 @@ export async function obtenerEjemplaresPorId(req:Request, res: Response) {
         return;
     }
     try {
-        const resultado = await pool.query(
-            "SELECT * FROM ejemplares WHERE id_ejemplar = $1",
-            [id]
-        );
+        const resultado = await EjemplarModel.obtenerPorId(id);
 
         const ejemplar = resultado.rows[0];
 
@@ -73,12 +69,7 @@ export async function crearEjemplar(req: Request, res: Response) {
     }
 
     try { 
-        const resultado = await pool.query(
-            `INSERT INTO ejemplares (id_libro, estado)
-            VALUES ($1, $2)
-            RETURNING *`,
-            [id_libro, estado]
-        );
+        const resultado = await EjemplarModel.crear(id_libro,estado);
 
         res.status(201).json(resultado.rows[0]);
     } catch (error) {
@@ -131,14 +122,7 @@ export async function actualizaEjemplar(req: Request, res: Response) {
     }
 
     try {
-        const resultado = await pool.query(
-            `UPDATE ejemplares
-            SET id_libro = $1, estado = $2 
-            WHERE id_ejemplar = $3
-            RETURNING *`,
-            [id_libro, estado, id]
-        );
-
+        const resultado = await EjemplarModel.actualizar(id, id_libro, estado);
         if (resultado.rows.length === 0) {
             res.status(404).json({
                 mensaje: "Ejemplar no encontrado"
@@ -180,12 +164,7 @@ export async function eliminarEjemplar(req: Request, res: Response) {
     }
 
     try {
-        const resultado = await pool.query(
-            `DELETE FROM ejemplares
-             WHERE id_ejemplar = $1
-             RETURNING *`,
-            [id]
-        );
+        const resultado = await EjemplarModel.eliminar(id);
 
         if (resultado.rows.length === 0) {
             res.status(404).json({
