@@ -6,6 +6,10 @@ import route from "./routes/route.js";
 import usuariosRouter from "./routes/usuarios.routes.js";
 import librosRouter from "./routes/libros.routes.js";
 
+//importa prestamosRouter from "./routes/prestamosRoute.js"; // Importamos las rutas de préstamos
+import prestamosRouter from "./routes/prestamosRoute.js"; // Importamos las rutas de préstamos
+
+
 dotenv.config();
 
 const app: Application = express();
@@ -18,10 +22,11 @@ app.use("/api/usuarios", usuariosRouter);
 app.use("/api/libros", librosRouter);
 
 
-
 app.use("/api", route);
 
+// Rutas de prestamos
+app.use("/api/prestamos", prestamosRouter);
 
 app.listen(PORT, function () {
-    console.log(`servidor corriendo en: http://localhost:${PORT}`);
+    console.log(`server BIBLIOTECA en: http://localhost:${PORT} online`);
 });
