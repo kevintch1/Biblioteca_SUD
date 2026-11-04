@@ -2,6 +2,7 @@
 import type { Request, Response } from "express";
 import { pool } from "../config/db.js";
 import { usuariosModels } from "../models/usuariosModels.js";
+import { EliminarUsuarioSchema } from "../schemas/usuariosSchemas.js";
 
 // 1. Consultar todos los usuarios
 export async function obtenerUsuarios(req: Request, res: Response) {
@@ -111,9 +112,10 @@ export const actualizarUsuario = async (req: Request, res: Response) => {
     }
 };
 // 5. Eliminar un usuario
-export const eliminarUsuario = async (req: Request, res: Response) => {
+export async function eliminarUsuario(req: Request, res: Response) {
     try {
-        const id = parseInt(String(req.params.id), 10);
+        
+        const validacion = EliminarUsuarioSchema.safeParse({ params: req.params });
 
         if (isNaN(id)) {
             return res.status(400).json({
@@ -121,7 +123,8 @@ export const eliminarUsuario = async (req: Request, res: Response) => {
                 message: "formato de id invalido"
             });
         }
-        const eliminarUsuario = await usuariosModels.delete(id);
+        const id = validacion.data.params.id;
+        const usuarioEliminado = await usuariosModels.delete(id);
 
         if (!eliminarUsuario) {
             return res.status(404).json({
@@ -132,8 +135,8 @@ export const eliminarUsuario = async (req: Request, res: Response) => {
 
         return res.status(200).json({
             ok: true,
-            message: "Usuario elimiando exitosamente",
-            data: eliminarUsuario
+            message: "Usuario eliminado exitosamente", 
+            data: usuarioEliminado
         });
 
     } catch (error: any) {
