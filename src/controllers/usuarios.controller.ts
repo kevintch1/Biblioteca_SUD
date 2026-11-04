@@ -2,6 +2,7 @@
 import type { Request, Response } from "express";
 import { pool } from "../config/db.js";
 import { usuariosModels } from "../models/usuariosModels.js";
+import { EliminarUsuarioSchema } from "../schemas/usuariosSchemas.js";
 
 // 1. Consultar todos los usuarios
 export async function obtenerUsuarios(req: Request, res: Response) {
@@ -37,14 +38,9 @@ const idBuscado = Number(req.params.id)
 }
 
 // 3. Crear un usuario
-export const crearUsuario = async (req: Request, res: Response) => {
+export  async function crearUsuario(req: Request, res: Response) {
         const { nombre, tipo, correo } = req.body;
 
-        if (!nombre || !tipo ) {
-            return res.status(400).json({
-                mensaje: "El nombre y el tipo son obligatorios"
-            });
-        }
   try {
     const crearUsuario = await usuariosModels.create(nombre, tipo, correo);
     res.status(201).json({
@@ -62,16 +58,9 @@ export const crearUsuario = async (req: Request, res: Response) => {
 };
 
 // 4. Actualizar un usuario
-export const actualizarUsuario = async (req: Request, res: Response) => {
+export async function actualizarUsuario(req: Request, res: Response) {
     const { id } = req.params; 
     const { nombre, tipo, correo } = req.body;
-
-    if (!nombre || !tipo) {
-        return res.status(400).json({
-            ok: false,
-            message: "Nombre y tipo son requeridos"
-        });
-    }
 
     try {
         const actualizarUsuario = await usuariosModels.update(id, nombre, tipo, correo);
@@ -98,19 +87,22 @@ export const actualizarUsuario = async (req: Request, res: Response) => {
     }
 };
 // 5. Eliminar un usuario
-export const eliminarUsuario = async (req: Request, res: Response) => {
+export async function eliminarUsuario(req: Request, res: Response) {
     try {
-        const id = parseInt(String(req.params.id), 10);
+        
+        const validacion = EliminarUsuarioSchema.safeParse({ params: req.params });
 
-        if (isNaN(id)) {
+        if (!validacion.success) {
             return res.status(400).json({ 
                 ok: false,
-                message: "formato de id invalido" 
+                message: "formato de id invalido",
+                detalles: validacion.error.format() // Te da el desglose del error exacto
             });
         }
-        const eliminarUsuario = await usuariosModels.delete(id);
+        const id = validacion.data.params.id;
+        const usuarioEliminado = await usuariosModels.delete(id);
 
-        if (!eliminarUsuario) {
+        if (!usuarioEliminado) {
             return res.status(404).json({ 
                 ok: false,
                 message: "Usuario no encontrado" 
@@ -119,8 +111,8 @@ export const eliminarUsuario = async (req: Request, res: Response) => {
 
         return res.status(200).json({
             ok: true,
-            message: "Usuario elimiando exitosamente",
-            data: eliminarUsuario
+            message: "Usuario eliminado exitosamente", 
+            data: usuarioEliminado
         });
 
     } catch (error: any) {
@@ -128,7 +120,8 @@ export const eliminarUsuario = async (req: Request, res: Response) => {
         
         return res.status(500).json({ 
             ok: false,
-            message: "Error al intentar eliminar usuario" 
+            message: "Error al intentar eliminar usuario",
+            detalles: error.message
         });
     }
 };
