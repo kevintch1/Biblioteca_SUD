@@ -6,24 +6,19 @@ import {
     findCategoryById,
     updateCategory as saveCategory,
 } from "../models/categorias.model.js";
+import { categoriaBodySchema, categoriaParamsSchema } from "../schemas/categorias.schema.js";
 
 type IdParams = { id: string };
-type CategoryBody = { nombre?: unknown };
 
 function parseId(req: Request<IdParams>, res: Response): number | undefined {
-    const id = Number(req.params.id);
-    if (!Number.isSafeInteger(id) || id < 1) {
-        res.status(400).json({ error: "El id debe ser un entero positivo." });
+    const resultado = categoriaParamsSchema.safeParse(req.params);
+    if (!resultado.success) {
+        res.status(400).json({
+            error: resultado.error.issues[0]?.message ?? "Parámetros inválidos.",
+        });
         return undefined;
     }
-    return id;
-}
-
-function requiredName(value: unknown): string | undefined {
-    if (typeof value !== "string" || value.trim().length === 0) {
-        return undefined;
-    }
-    return value.trim();
+    return resultado.data.id;
 }
 
 async function handleDatabaseError(
@@ -61,34 +56,40 @@ export async function getCategory(req: Request<IdParams>, res: Response): Promis
 }
 
 export async function createCategory(
-    req: Request<Record<string, string>, unknown, CategoryBody>,
+    req: Request<Record<string, string>, unknown, unknown>,
     res: Response,
 ): Promise<void> {
-    const nombre = requiredName(req.body?.nombre);
-    if (!nombre) {
-        res.status(400).json({ error: "El nombre de la categoría es obligatorio." });
+    const resultado = categoriaBodySchema.safeParse(req.body);
+    if (!resultado.success) {
+        res.status(400).json({
+            error:
+                resultado.error.issues[0]?.message ?? "Datos de categoría inválidos.",
+        });
         return;
     }
 
     await handleDatabaseError(res, async () => {
-        res.status(201).json(await insertCategory(nombre));
+        res.status(201).json(await insertCategory(resultado.data.nombre));
     });
 }
 
 export async function updateCategory(
-    req: Request<IdParams, unknown, CategoryBody>,
+    req: Request<IdParams, unknown, unknown>,
     res: Response,
 ): Promise<void> {
     const id = parseId(req, res);
     if (id === undefined) return;
-    const nombre = requiredName(req.body?.nombre);
-    if (!nombre) {
-        res.status(400).json({ error: "El nombre de la categoría es obligatorio." });
+    const resultado = categoriaBodySchema.safeParse(req.body);
+    if (!resultado.success) {
+        res.status(400).json({
+            error:
+                resultado.error.issues[0]?.message ?? "Datos de categoría inválidos.",
+        });
         return;
     }
 
     await handleDatabaseError(res, async () => {
-        const category = await saveCategory(id, nombre);
+        const category = await saveCategory(id, resultado.data.nombre);
         if (!category) {
             res.status(404).json({ error: "Categoría no encontrada." });
             return;
