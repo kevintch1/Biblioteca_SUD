@@ -1,5 +1,11 @@
 import type { Request, Response } from "express";
-import { pool } from "../config/db.js";
+import {
+    createAuthor as insertAuthor,
+    deleteAuthor as removeAuthor,
+    findAllAuthors,
+    findAuthorById,
+    updateAuthor as saveAuthor,
+} from "../models/autores.model.js";
 
 type IdParams = { id: string };
 type AuthorBody = { nombre?: unknown; nacionalidad?: unknown };
@@ -46,10 +52,7 @@ async function handleDatabaseError(
 
 export async function getAuthors(_req: Request, res: Response): Promise<void> {
     await handleDatabaseError(res, async () => {
-        const { rows } = await pool.query(
-            "SELECT id_autor, nombre, nacionalidad FROM autores ORDER BY id_autor",
-        );
-        res.json(rows);
+        res.json(await findAllAuthors());
     });
 }
 
@@ -58,15 +61,12 @@ export async function getAuthor(req: Request<IdParams>, res: Response): Promise<
     if (id === undefined) return;
 
     await handleDatabaseError(res, async () => {
-        const { rows } = await pool.query(
-            "SELECT id_autor, nombre, nacionalidad FROM autores WHERE id_autor = $1",
-            [id],
-        );
-        if (rows.length === 0) {
+        const author = await findAuthorById(id);
+        if (!author) {
             res.status(404).json({ error: "Autor no encontrado." });
             return;
         }
-        res.json(rows[0]);
+        res.json(author);
     });
 }
 
@@ -84,11 +84,7 @@ export async function createAuthor(
     }
 
     await handleDatabaseError(res, async () => {
-        const { rows } = await pool.query(
-            "INSERT INTO autores (nombre, nacionalidad) VALUES ($1, $2) RETURNING id_autor, nombre, nacionalidad",
-            [nombre, nacionalidad],
-        );
-        res.status(201).json(rows[0]);
+        res.status(201).json(await insertAuthor(nombre, nacionalidad));
     });
 }
 
@@ -108,15 +104,12 @@ export async function updateAuthor(
     }
 
     await handleDatabaseError(res, async () => {
-        const { rows } = await pool.query(
-            "UPDATE autores SET nombre = $1, nacionalidad = $2 WHERE id_autor = $3 RETURNING id_autor, nombre, nacionalidad",
-            [nombre, nacionalidad, id],
-        );
-        if (rows.length === 0) {
+        const author = await saveAuthor(id, nombre, nacionalidad);
+        if (!author) {
             res.status(404).json({ error: "Autor no encontrado." });
             return;
         }
-        res.json(rows[0]);
+        res.json(author);
     });
 }
 
@@ -125,11 +118,8 @@ export async function deleteAuthor(req: Request<IdParams>, res: Response): Promi
     if (id === undefined) return;
 
     await handleDatabaseError(res, async () => {
-        const { rowCount } = await pool.query(
-            "DELETE FROM autores WHERE id_autor = $1",
-            [id],
-        );
-        if (rowCount === 0) {
+        const deletedRows = await removeAuthor(id);
+        if (deletedRows === 0) {
             res.status(404).json({ error: "Autor no encontrado." });
             return;
         }
