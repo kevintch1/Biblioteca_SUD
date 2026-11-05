@@ -1,12 +1,33 @@
+import { number } from "zod";
 import { query } from "../config/db.js";
 
-export async function getLibroAutorModel() {
-    const text = `
+export async function getLibroAutorModel(filters: {
+    id_libro?: number | undefined;
+    id_autor?: number | undefined;
+}) {
+    let text = `
         SELECT * FROM libro_autor
-        ORDER BY id_libro ASC
+        WHERE 1=1
     `;
 
-    const { rows } = await query(text);
+    const values = [];
+    let paramIndex = 1;
+
+    if (filters.id_libro) {
+        text += ` AND id_libro = $${paramIndex}`;
+        values.push(filters.id_libro);
+        paramIndex++;
+    }
+
+    if (filters.id_autor) {
+        text += ` AND id_autor = $${paramIndex}`;
+        values.push(filters.id_autor);
+        paramIndex++;
+    }
+
+    text += " ORDER BY id_libro ASC";
+
+    const { rows } = await query(text, values);
     return rows;
 }
 

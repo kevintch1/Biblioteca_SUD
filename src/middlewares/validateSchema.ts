@@ -1,11 +1,24 @@
 import type { Request, Response, NextFunction } from "express";
 import { z } from "zod";
 
-export function validateSchema(schema: z.ZodType) {
+export function validateSchema(
+    schema: z.ZodType,
+    source: "body" | "query" = "body"
+) {
     return async (req: Request, res: Response, next: NextFunction) => {
         try {
-            req.body = await schema.parseAsync(req.body);
+            const data = source === "query" ? req.query : req.body;
+
+            const validatedData = await schema.parseAsync(data);
+
+            if (source === "body") {
+                req.body = validatedData;
+            } else {
+                res.locals.validatedQuery = validatedData;
+            }
+
             next();
+
         } catch (error) {
             if (error instanceof z.ZodError) {
                 const flattened = z.flattenError(error);

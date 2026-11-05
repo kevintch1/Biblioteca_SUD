@@ -1,5 +1,5 @@
 import type { Request, Response } from "express";
-
+import type { GetLibroAutorQueryInput } from "../schemas/libroaAutorSchema.js";
 import {
     getLibroAutorModel,
     createLibroAutorModel,
@@ -7,8 +7,12 @@ import {
 } from "../models/libroAutorModel.js";
 
 export async function getLibroAutor(req: Request, res: Response) {
+    const { id_libro, id_autor } = res.locals.validatedQuery as GetLibroAutorQueryInput;
     try {
-        const rows = await getLibroAutorModel();
+        const rows = await getLibroAutorModel({
+            id_libro,
+            id_autor
+        });
 
         res.json(rows);
 
