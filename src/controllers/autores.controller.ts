@@ -6,20 +6,10 @@ import {
     findAuthorById,
     updateAuthor as saveAuthor,
 } from "../models/autores.model.js";
-import { autorBodySchema, autorParamsSchema } from "../schemas/autores.schema.js";
+import { autorBodySchema } from "../schemas/autores.schema.js";
+import type { z } from "zod";
 
 type IdParams = { id: string };
-
-function parseId(req: Request<IdParams>, res: Response): number | undefined {
-    const resultado = autorParamsSchema.safeParse(req.params);
-    if (!resultado.success) {
-        res.status(400).json({
-            error: resultado.error.issues[0]?.message ?? "Parámetros inválidos.",
-        });
-        return undefined;
-    }
-    return resultado.data.id;
-}
 
 async function handleDatabaseError(
     res: Response,
@@ -42,8 +32,7 @@ export async function getAuthors(_req: Request, res: Response): Promise<void> {
 }
 
 export async function getAuthor(req: Request<IdParams>, res: Response): Promise<void> {
-    const id = parseId(req, res);
-    if (id === undefined) return;
+    const id = Number(req.params.id);
 
     await handleDatabaseError(res, async () => {
         const author = await findAuthorById(id);
@@ -56,39 +45,29 @@ export async function getAuthor(req: Request<IdParams>, res: Response): Promise<
 }
 
 export async function createAuthor(
-    req: Request<Record<string, string>, unknown, unknown>,
+    req: Request<
+        Record<string, string>,
+        unknown,
+        z.infer<typeof autorBodySchema>
+    >,
     res: Response,
 ): Promise<void> {
-    const resultado = autorBodySchema.safeParse(req.body);
-    if (!resultado.success) {
-        res.status(400).json({
-            error: resultado.error.issues[0]?.message ?? "Datos de autor inválidos.",
-        });
-        return;
-    }
+    const { nombre, nacionalidad } = req.body;
 
     await handleDatabaseError(res, async () => {
-        const { nombre, nacionalidad } = resultado.data;
         res.status(201).json(await insertAuthor(nombre, nacionalidad ?? null));
     });
 }
 
 export async function updateAuthor(
-    req: Request<IdParams, unknown, unknown>,
+    req: Request<IdParams, unknown, z.infer<typeof autorBodySchema>>,
     res: Response,
 ): Promise<void> {
-    const id = parseId(req, res);
-    if (id === undefined) return;
-    const resultado = autorBodySchema.safeParse(req.body);
-    if (!resultado.success) {
-        res.status(400).json({
-            error: resultado.error.issues[0]?.message ?? "Datos de autor inválidos.",
-        });
-        return;
-    }
+    const id = Number(req.params.id);
+
+    const { nombre, nacionalidad } = req.body;
 
     await handleDatabaseError(res, async () => {
-        const { nombre, nacionalidad } = resultado.data;
         const author = await saveAuthor(id, nombre, nacionalidad ?? null);
         if (!author) {
             res.status(404).json({ error: "Autor no encontrado." });
@@ -99,8 +78,7 @@ export async function updateAuthor(
 }
 
 export async function deleteAuthor(req: Request<IdParams>, res: Response): Promise<void> {
-    const id = parseId(req, res);
-    if (id === undefined) return;
+    const id = Number(req.params.id);
 
     await handleDatabaseError(res, async () => {
         const deletedRows = await removeAuthor(id);
