@@ -2,39 +2,60 @@
 import type { Request, Response } from "express";
 import { pool } from "../config/db.js";
 import { usuariosModels } from "../models/usuariosModels.js";
-import { EliminarUsuarioSchema } from "../schemas/usuariosSchemas.js";
+import { EliminarUsuarioSchema } from "../schemas/usuariosSchemas.js"; 
+import type { GetUserQueryInput, GetUserParamsInput } from "../schemas/usuariosSchemas.js"; 
 
 // 1. Consultar todos los usuarios
-export async function obtenerUsuarios(req: Request, res: Response) {
-    try {
-        const usuarios = await usuariosModels.findAll();
-        res.status(200).json(usuarios);
-    } catch (error: any) {
-        console.error(error)
-        res.status(500).json; ({
-            error: "error al obtener todos los usuarios",
-            detalles: error.mesagge,
-        });
-    }
+export async function obtenerUsuarios(
+  req: Request<{}, {}, {}, GetUserQueryInput>, // parámetros estrictos
+  res: Response
+) {
+  try {
+   const { name, email, limit } = req.query;
+
+    
+    const usuarios = await usuariosModels.findAll({ nombre: name, correo: email, limit });
+    
+    
+    return res.status(200).json(usuarios);
+
+  } catch (error: any) {
+    console.error("Error al obtener usuarios:", error);
+    return res.status(500).json({ message: "Error interno del servidor" });
+  }
 }
 
 // 2. Consultar un usuario por ID
-export async function obtenerUsuarioPorId(req: Request, res: Response) {
-    const idBuscado = Number(req.params.id)
-    try {
-        const usuarios = await usuariosModels.findById(idBuscado);
-        res.status(200).json({
-            ok: true,
-            data: usuarios
-        })
+export async function obtenerUsuarioPorId(
+  req: Request<GetUserParamsInput>, // El primer parámetro tipa req.params
+  res: Response
+) {
+  try {
+    // 1. Gracias al .transform(Number) de Zod, req.params.id ya es un número real aquí
+    const idBuscado = req.params.id;
 
-    } catch (error: any) {
-        console.error(error)
-        res.status(404).json; ({
-            error: "usuario no encontrado",
-            detalles: error.mesagge,
-        });
+    // 2. se busca el modelo
+    const usuario = await usuariosModels.findById(idBuscado);
+
+    // Si el modelo retorna null o undefined marca error para ir al catch
+    if (!usuario) {
+      return res.status(404).json({ error: "usuario no encontrado" });
     }
+
+    
+    return res.status(200).json({
+      ok: true,
+      data: usuario
+    });
+
+  } catch (error: any) {
+    console.error(error);
+
+    return res.status(500).json({
+      error: "Error interno del servidor",
+      detalles: error.message, 
+    });
+  }
 }
 
 // 3. Crear un usuario

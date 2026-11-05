@@ -1,5 +1,22 @@
  import { z } from "zod";
 
+ export const GetUserQuerySchema = z.object({
+  query: z.object({
+    nombre: z.string().optional(),
+    correo: z.string().email().optional(),
+    limit: z.string().optional(), 
+  }),
+});
+export type GetUserQueryInput = z.infer<typeof GetUserQuerySchema>["query"];
+
+export const GetUserParamsSchema = z.object({
+  params: z.object({
+    id: z.string().regex(/^\d+$/, "El ID debe ser un número entero").transform(Number),
+  }),
+});
+
+export type GetUserParamsInput = z.infer<typeof GetUserParamsSchema>["params"];
+
  export const obtenerUsuariosSchema = z.object({
      id: z.string(),
   nombre: z.string()
