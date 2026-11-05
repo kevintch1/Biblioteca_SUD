@@ -1,9 +1,15 @@
 import { pool } from "../config/db.js";
 
-export async function findAllAuthors() {
+// Busca autores. El nombre es opcional: si no se recibe, devuelve todos.
+export async function findAllAuthors(nombre?: string) {
     const { rows } = await pool.query(
-        "SELECT id_autor, nombre, nacionalidad FROM autores ORDER BY id_autor",
+        `SELECT id_autor, nombre, nacionalidad
+         FROM autores
+         WHERE ($1::text IS NULL OR nombre ILIKE '%' || $1 || '%')
+         ORDER BY id_autor`,
+        [nombre ?? null],
     );
+
     return rows;
 }
 

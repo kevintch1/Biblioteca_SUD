@@ -25,9 +25,18 @@ async function handleDatabaseError(
     }
 }
 
-export async function getAuthors(_req: Request, res: Response): Promise<void> {
+export async function getAuthors(req: Request, res: Response): Promise<void> {
+    const nombre = req.query.nombre;
+
+    if (nombre !== undefined && typeof nombre !== "string") {
+        res.status(400).json({ error: "El filtro nombre debe ser un texto." });
+        return;
+    }
+
+    const filtro = nombre?.trim() || undefined;
+
     await handleDatabaseError(res, async () => {
-        res.json(await findAllAuthors());
+        res.json(await findAllAuthors(filtro));
     });
 }
 
