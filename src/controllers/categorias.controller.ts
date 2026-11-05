@@ -6,20 +6,10 @@ import {
     findCategoryById,
     updateCategory as saveCategory,
 } from "../models/categorias.model.js";
-import { categoriaBodySchema, categoriaParamsSchema } from "../schemas/categorias.schema.js";
+import { categoriaBodySchema } from "../schemas/categorias.schema.js";
+import type { z } from "zod";
 
 type IdParams = { id: string };
-
-function parseId(req: Request<IdParams>, res: Response): number | undefined {
-    const resultado = categoriaParamsSchema.safeParse(req.params);
-    if (!resultado.success) {
-        res.status(400).json({
-            error: resultado.error.issues[0]?.message ?? "Parámetros inválidos.",
-        });
-        return undefined;
-    }
-    return resultado.data.id;
-}
 
 async function handleDatabaseError(
     res: Response,
@@ -42,8 +32,7 @@ export async function getCategories(_req: Request, res: Response): Promise<void>
 }
 
 export async function getCategory(req: Request<IdParams>, res: Response): Promise<void> {
-    const id = parseId(req, res);
-    if (id === undefined) return;
+    const id = Number(req.params.id);
 
     await handleDatabaseError(res, async () => {
         const category = await findCategoryById(id);
@@ -56,40 +45,22 @@ export async function getCategory(req: Request<IdParams>, res: Response): Promis
 }
 
 export async function createCategory(
-    req: Request<Record<string, string>, unknown, unknown>,
+    req: Request<Record<string, string>, unknown, z.infer<typeof categoriaBodySchema>>,
     res: Response,
 ): Promise<void> {
-    const resultado = categoriaBodySchema.safeParse(req.body);
-    if (!resultado.success) {
-        res.status(400).json({
-            error:
-                resultado.error.issues[0]?.message ?? "Datos de categoría inválidos.",
-        });
-        return;
-    }
-
     await handleDatabaseError(res, async () => {
-        res.status(201).json(await insertCategory(resultado.data.nombre));
+        res.status(201).json(await insertCategory(req.body.nombre));
     });
 }
 
 export async function updateCategory(
-    req: Request<IdParams, unknown, unknown>,
+    req: Request<IdParams, unknown, z.infer<typeof categoriaBodySchema>>,
     res: Response,
 ): Promise<void> {
-    const id = parseId(req, res);
-    if (id === undefined) return;
-    const resultado = categoriaBodySchema.safeParse(req.body);
-    if (!resultado.success) {
-        res.status(400).json({
-            error:
-                resultado.error.issues[0]?.message ?? "Datos de categoría inválidos.",
-        });
-        return;
-    }
+    const id = Number(req.params.id);
 
     await handleDatabaseError(res, async () => {
-        const category = await saveCategory(id, resultado.data.nombre);
+        const category = await saveCategory(id, req.body.nombre);
         if (!category) {
             res.status(404).json({ error: "Categoría no encontrada." });
             return;
@@ -99,8 +70,7 @@ export async function updateCategory(
 }
 
 export async function deleteCategory(req: Request<IdParams>, res: Response): Promise<void> {
-    const id = parseId(req, res);
-    if (id === undefined) return;
+    const id = Number(req.params.id);
 
     await handleDatabaseError(res, async () => {
         const deletedRows = await removeCategory(id);
