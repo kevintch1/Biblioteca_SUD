@@ -6,35 +6,10 @@ import {
     findAuthorById,
     updateAuthor as saveAuthor,
 } from "../models/autores.model.js";
+import { autorBodySchema } from "../schemas/autores.schema.js";
+import type { z } from "zod";
 
 type IdParams = { id: string };
-type AuthorBody = { nombre?: unknown; nacionalidad?: unknown };
-
-function parseId(req: Request<IdParams>, res: Response): number | undefined {
-    const id = Number(req.params.id);
-    if (!Number.isSafeInteger(id) || id < 1) {
-        res.status(400).json({ error: "El id debe ser un entero positivo." });
-        return undefined;
-    }
-    return id;
-}
-
-function requiredName(value: unknown): string | undefined {
-    if (typeof value !== "string" || value.trim().length === 0) {
-        return undefined;
-    }
-    return value.trim();
-}
-
-function optionalNationality(value: unknown): string | null | undefined {
-    if (value === undefined || value === null) {
-        return null;
-    }
-    if (typeof value !== "string") {
-        return undefined;
-    }
-    return value.trim() || null;
-}
 
 async function handleDatabaseError(
     res: Response,
@@ -50,15 +25,23 @@ async function handleDatabaseError(
     }
 }
 
-export async function getAuthors(_req: Request, res: Response): Promise<void> {
+export async function getAuthors(req: Request, res: Response): Promise<void> {
+    const nombre = req.query.nombre;
+
+    if (nombre !== undefined && typeof nombre !== "string") {
+        res.status(400).json({ error: "El filtro nombre debe ser un texto." });
+        return;
+    }
+
+    const filtro = nombre?.trim() || undefined;
+
     await handleDatabaseError(res, async () => {
-        res.json(await findAllAuthors());
+        res.json(await findAllAuthors(filtro));
     });
 }
 
 export async function getAuthor(req: Request<IdParams>, res: Response): Promise<void> {
-    const id = parseId(req, res);
-    if (id === undefined) return;
+    const id = Number(req.params.id);
 
     await handleDatabaseError(res, async () => {
         const author = await findAuthorById(id);
@@ -71,40 +54,30 @@ export async function getAuthor(req: Request<IdParams>, res: Response): Promise<
 }
 
 export async function createAuthor(
-    req: Request<Record<string, string>, unknown, AuthorBody>,
+    req: Request<
+        Record<string, string>,
+        unknown,
+        z.infer<typeof autorBodySchema>
+    >,
     res: Response,
 ): Promise<void> {
-    const nombre = requiredName(req.body?.nombre);
-    const nacionalidad = optionalNationality(req.body?.nacionalidad);
-    if (!nombre || nacionalidad === undefined) {
-        res.status(400).json({
-            error: "El nombre es obligatorio y la nacionalidad debe ser texto o null.",
-        });
-        return;
-    }
+    const { nombre, nacionalidad } = req.body;
 
     await handleDatabaseError(res, async () => {
-        res.status(201).json(await insertAuthor(nombre, nacionalidad));
+        res.status(201).json(await insertAuthor(nombre, nacionalidad ?? null));
     });
 }
 
 export async function updateAuthor(
-    req: Request<IdParams, unknown, AuthorBody>,
+    req: Request<IdParams, unknown, z.infer<typeof autorBodySchema>>,
     res: Response,
 ): Promise<void> {
-    const id = parseId(req, res);
-    if (id === undefined) return;
-    const nombre = requiredName(req.body?.nombre);
-    const nacionalidad = optionalNationality(req.body?.nacionalidad);
-    if (!nombre || nacionalidad === undefined) {
-        res.status(400).json({
-            error: "El nombre es obligatorio y la nacionalidad debe ser texto o null.",
-        });
-        return;
-    }
+    const id = Number(req.params.id);
+
+    const { nombre, nacionalidad } = req.body;
 
     await handleDatabaseError(res, async () => {
-        const author = await saveAuthor(id, nombre, nacionalidad);
+        const author = await saveAuthor(id, nombre, nacionalidad ?? null);
         if (!author) {
             res.status(404).json({ error: "Autor no encontrado." });
             return;
@@ -114,8 +87,7 @@ export async function updateAuthor(
 }
 
 export async function deleteAuthor(req: Request<IdParams>, res: Response): Promise<void> {
-    const id = parseId(req, res);
-    if (id === undefined) return;
+    const id = Number(req.params.id);
 
     await handleDatabaseError(res, async () => {
         const deletedRows = await removeAuthor(id);

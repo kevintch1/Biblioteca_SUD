@@ -6,25 +6,10 @@ import {
     findCategoryById,
     updateCategory as saveCategory,
 } from "../models/categorias.model.js";
+import { categoriaBodySchema } from "../schemas/categorias.schema.js";
+import type { z } from "zod";
 
 type IdParams = { id: string };
-type CategoryBody = { nombre?: unknown };
-
-function parseId(req: Request<IdParams>, res: Response): number | undefined {
-    const id = Number(req.params.id);
-    if (!Number.isSafeInteger(id) || id < 1) {
-        res.status(400).json({ error: "El id debe ser un entero positivo." });
-        return undefined;
-    }
-    return id;
-}
-
-function requiredName(value: unknown): string | undefined {
-    if (typeof value !== "string" || value.trim().length === 0) {
-        return undefined;
-    }
-    return value.trim();
-}
 
 async function handleDatabaseError(
     res: Response,
@@ -40,15 +25,23 @@ async function handleDatabaseError(
     }
 }
 
-export async function getCategories(_req: Request, res: Response): Promise<void> {
+export async function getCategories(req: Request, res: Response): Promise<void> {
+    const nombre = req.query.nombre;
+
+    if (nombre !== undefined && typeof nombre !== "string") {
+        res.status(400).json({ error: "El filtro nombre debe ser un texto." });
+        return;
+    }
+
+    const filtro = nombre?.trim() || undefined;
+
     await handleDatabaseError(res, async () => {
-        res.json(await findAllCategories());
+        res.json(await findAllCategories(filtro));
     });
 }
 
 export async function getCategory(req: Request<IdParams>, res: Response): Promise<void> {
-    const id = parseId(req, res);
-    if (id === undefined) return;
+    const id = Number(req.params.id);
 
     await handleDatabaseError(res, async () => {
         const category = await findCategoryById(id);
@@ -61,34 +54,22 @@ export async function getCategory(req: Request<IdParams>, res: Response): Promis
 }
 
 export async function createCategory(
-    req: Request<Record<string, string>, unknown, CategoryBody>,
+    req: Request<Record<string, string>, unknown, z.infer<typeof categoriaBodySchema>>,
     res: Response,
 ): Promise<void> {
-    const nombre = requiredName(req.body?.nombre);
-    if (!nombre) {
-        res.status(400).json({ error: "El nombre de la categoría es obligatorio." });
-        return;
-    }
-
     await handleDatabaseError(res, async () => {
-        res.status(201).json(await insertCategory(nombre));
+        res.status(201).json(await insertCategory(req.body.nombre));
     });
 }
 
 export async function updateCategory(
-    req: Request<IdParams, unknown, CategoryBody>,
+    req: Request<IdParams, unknown, z.infer<typeof categoriaBodySchema>>,
     res: Response,
 ): Promise<void> {
-    const id = parseId(req, res);
-    if (id === undefined) return;
-    const nombre = requiredName(req.body?.nombre);
-    if (!nombre) {
-        res.status(400).json({ error: "El nombre de la categoría es obligatorio." });
-        return;
-    }
+    const id = Number(req.params.id);
 
     await handleDatabaseError(res, async () => {
-        const category = await saveCategory(id, nombre);
+        const category = await saveCategory(id, req.body.nombre);
         if (!category) {
             res.status(404).json({ error: "Categoría no encontrada." });
             return;
@@ -98,8 +79,7 @@ export async function updateCategory(
 }
 
 export async function deleteCategory(req: Request<IdParams>, res: Response): Promise<void> {
-    const id = parseId(req, res);
-    if (id === undefined) return;
+    const id = Number(req.params.id);
 
     await handleDatabaseError(res, async () => {
         const deletedRows = await removeCategory(id);

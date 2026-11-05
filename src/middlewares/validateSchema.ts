@@ -32,8 +32,8 @@ export function validateSchema(
                 });
                 return;
             }
-
             next(error);
         }
     }
 }
+
