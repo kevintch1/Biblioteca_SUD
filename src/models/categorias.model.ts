@@ -1,8 +1,13 @@
 import { pool } from "../config/db.js";
 
-export async function findAllCategories() {
+// Busca categorías. El nombre es opcional: si no se recibe, devuelve todas.
+export async function findAllCategories(nombre?: string) {
     const { rows } = await pool.query(
-        "SELECT id_categoria, nombre FROM categorias ORDER BY id_categoria",
+        `SELECT id_categoria, nombre
+         FROM categorias
+         WHERE ($1::text IS NULL OR nombre ILIKE '%' || $1 || '%')
+         ORDER BY id_categoria`,
+        [nombre ?? null],
     );
     return rows;
 }
