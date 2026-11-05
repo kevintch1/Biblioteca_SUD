@@ -1,27 +1,36 @@
 import type { Request, Response, NextFunction } from "express";
 import { z } from "zod";
 
-export const validate = (schema: AnyZodObject) => 
-  async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      // Zod analiza el body, query o params que configuraste en tu esquema
-      await schema.parseAsync({
-        body: req.body,
-        query: req.query,
-        params: req.params,
-      });
-      return next(); // Si todo es correcto, pasa al controlador
-    } catch (error) {
-      if (error instanceof ZodError) {
-        return res.status(400).json({
-          ok: false,
-          error: "Error de validación",
-          detalles: error.errors.map(err => ({
-            campo: err.path.join("."),
-            mensaje: err.message
-          }))
-        });
-      }
-      return res.status(500).json({ ok: false, error: "Error interno en la validación" });
-    }
-  };
+export function validateSchema(
+    schema: z.ZodType,
+    source: "body" | "query" = "body"
+) {
+    return async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            const data = source === "query" ? req.query : req.body;
+
+            const validatedData = await schema.parseAsync(data);
+
+            if (source === "body") {
+                req.body = validatedData;
+            } else {
+                res.locals.validatedQuery = validatedData;
+            }
+
+            next();
+
+        } catch (error) {
+            if (error instanceof z.ZodError) {
+                const flattened = z.flattenError(error);
+
+                return res.status(400).json({
+                    status: "error",
+                    message: "Error de validación en los datos enviados",
+                    errors: flattened.fieldErrors,
+                });
+            }
+
+            next(error);
+        }
+    };
+}

@@ -8,11 +8,11 @@ import {
 
 import { validateSchema } from "../middlewares/validateSchema.js";
 
-import { createLibroAutorSchema } from "../schemas/libroaAutorSchema.js";
+import { createLibroAutorSchema, getLibroAutorQuerySchema } from "../schemas/libroaAutorSchema.js";
 
 const router = Router();
 
-router.get("/libro-autor", getLibroAutor);
+router.get("/libro-autor", validateSchema(getLibroAutorQuerySchema, "query"), getLibroAutor);
 
 router.post("/libro-autor", validateSchema(createLibroAutorSchema), createLibroAutor);
 
