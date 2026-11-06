@@ -1,5 +1,4 @@
-
-import { Router } from "express";
+import { Router, type Router as RouterType } from "express";
 
 import {
     obtenerUsuarios,
@@ -9,7 +8,7 @@ import {
     eliminarUsuario
 } from "../controllers/usuarios.controller.js";
 
-const router = Router();
+const router: RouterType = Router();
 
 router.get("/", obtenerUsuarios);
 router.get("/:id", obtenerUsuarioPorId);

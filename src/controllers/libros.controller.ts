@@ -1,15 +1,16 @@
 
 import type { Request, Response } from "express";
-import { pool } from "../config/db.js";
+import { LibroModel } from "../models/libro.model.js";
 
 // 1. Consultar todos los libros
 export const obtenerLibros = async (req: Request, res: Response) => {
     try {
-        const resultado = await pool.query(
-            "SELECT * FROM libros ORDER BY id_libro ASC"
-        );
+        const page = res.locals.query.page || 1;
+        const limit = res.locals.query.limit || 10;
 
-        res.json(resultado.rows);
+        const libros = await LibroModel.findAll(page, limit);
+
+        res.json(libros);
 
     } catch (error) {
         console.log(error);
@@ -20,22 +21,15 @@ export const obtenerLibros = async (req: Request, res: Response) => {
 // 2. Consultar un libro por ID
 export const obtenerLibroPorId = async (req: Request, res: Response) => {
     try {
-        const id = parseInt(String(req.params.id));
+        const id = req.params.id as unknown as number;
 
-        if (isNaN(id)) {
-            return res.status(400).json({ mensaje: "ID no válido" });
-        }
+        const libro = await LibroModel.findById(id);
 
-        const resultado = await pool.query(
-            "SELECT * FROM libros WHERE id_libro = $1",
-            [id]
-        );
-
-        if (resultado.rows.length === 0) {
+        if (!libro) {
             return res.status(404).json({ mensaje: "Libro no encontrado" });
         }
 
-        res.json(resultado.rows[0]);
+        res.json(libro);
 
     } catch (error) {
         console.log(error);
@@ -54,19 +48,14 @@ export const crearLibro = async (req: Request, res: Response) => {
             });
         }
 
-        const resultado = await pool.query(
-            `INSERT INTO libros (titulo, editorial, anio_publicacion, id_categoria)
-            VALUES ($1, $2, $3, $4)
-            RETURNING *`,
-            [
-                titulo,
-                editorial || null,
-                anio_publicacion || null,
-                id_categoria || null
-            ]
+        const libro = await LibroModel.create(
+            titulo,
+            editorial || null,
+            anio_publicacion || null,
+            id_categoria || null
         );
 
-        res.status(201).json(resultado.rows[0]);
+        res.status(201).json(libro);
 
     } catch (error) {
         console.log(error);
@@ -77,12 +66,8 @@ export const crearLibro = async (req: Request, res: Response) => {
 // 4. Actualizar un libro
 export const actualizarLibro = async (req: Request, res: Response) => {
     try {
-        const id = parseInt(String(req.params.id));
+        const id = req.params.id as unknown as number;
         const { titulo, editorial, anio_publicacion, id_categoria } = req.body;
-
-        if (isNaN(id)) {
-            return res.status(400).json({ mensaje: "ID no válido" });
-        }
 
         if (!titulo) {
             return res.status(400).json({
@@ -90,25 +75,19 @@ export const actualizarLibro = async (req: Request, res: Response) => {
             });
         }
 
-        const resultado = await pool.query(
-            `UPDATE libros
-            SET titulo = $1, editorial = $2, anio_publicacion = $3, id_categoria = $4
-            WHERE id_libro = $5
-            RETURNING *`,
-            [
-                titulo,
-                editorial || null,
-                anio_publicacion || null,
-                id_categoria || null,
-                id
-            ]
+        const libro = await LibroModel.update(
+            id,
+            titulo,
+            editorial || null,
+            anio_publicacion || null,
+            id_categoria || null
         );
 
-        if (resultado.rows.length === 0) {
+        if (!libro) {
             return res.status(404).json({ mensaje: "Libro no encontrado" });
         }
 
-        res.json(resultado.rows[0]);
+        res.json(libro);
 
     } catch (error) {
         console.log(error);
@@ -119,24 +98,17 @@ export const actualizarLibro = async (req: Request, res: Response) => {
 // 5. Eliminar un libro
 export const eliminarLibro = async (req: Request, res: Response) => {
     try {
-        const id = parseInt(String(req.params.id));
+        const id = req.params.id as unknown as number;
 
-        if (isNaN(id)) {
-            return res.status(400).json({ mensaje: "ID no válido" });
-        }
+        const libro = await LibroModel.delete(id);
 
-        const resultado = await pool.query(
-            "DELETE FROM libros WHERE id_libro = $1 RETURNING *",
-            [id]
-        );
-
-        if (resultado.rows.length === 0) {
+        if (!libro) {
             return res.status(404).json({ mensaje: "Libro no encontrado" });
         }
 
         res.json({
             mensaje: "Libro eliminado correctamente",
-            libro: resultado.rows[0]
+            libro: libro
         });
 
     } catch (error) {

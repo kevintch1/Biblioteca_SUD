@@ -1,5 +1,4 @@
-
-import { Router } from "express";
+import { Router, type Router as RouterType } from "express";
 
 import {
     obtenerLibros,
@@ -9,12 +8,17 @@ import {
     eliminarLibro
 } from "../controllers/libros.controller.js";
 
-const router = Router();
+import { validarParams } from "../middlewares/validarParams.js";
+import { paramsIdSchema } from "../schemas/params.schema.js";
+import { validarQuery } from "../middlewares/validarQuery.js";
+import { queryLibrosSchema } from "../schemas/query.schema.js";
 
-router.get("/", obtenerLibros);
-router.get("/:id", obtenerLibroPorId);
+const router: RouterType = Router();
+
+router.get("/", validarQuery(queryLibrosSchema), obtenerLibros);
+router.get("/:id", validarParams(paramsIdSchema), obtenerLibroPorId);
 router.post("/", crearLibro);
-router.put("/:id", actualizarLibro);
-router.delete("/:id", eliminarLibro);
+router.put("/:id", validarParams(paramsIdSchema), actualizarLibro);
+router.delete("/:id", validarParams(paramsIdSchema), eliminarLibro);
 
 export default router;
