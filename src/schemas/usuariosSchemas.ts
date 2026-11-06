@@ -1,11 +1,19 @@
 
-import { z } from "zod";
-
-// Obtener usuarios mediante query params
-export const GetUserQuerySchema = z.object({
-  nombre: z.string().optional(),
-  correo: z.string().email().optional(),
-  limit: z.string().optional(),
+ export const GetUserQuerySchema = z.object({
+  query: z.object({
+    nombre: z.string().optional(),
+    correo: z.string().email().optional(),
+    page: z
+    .string()
+    .regex(/^\d+$/, "la page debe ser un numero")
+    .transform(Number)
+    .default(1),
+    limit: z
+    .string()
+    .regex(/^\d+$/, "el limite debe ser un numero")
+    .transform(Number)
+    .default(10),
+  }),
 });
 
 export type GetUserQueryInput = z.infer<typeof GetUserQuerySchema>;
