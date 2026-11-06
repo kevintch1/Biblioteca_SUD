@@ -2,6 +2,8 @@ import type { Application, Request, Response } from "express";
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
+import swaggerUi from 'swagger-ui-express';
+import swaggerOutput from '../swagger_output.json';
 
 import autoresRouter from "./routes/autores.routes.js";
 import categoriasRouter from "./routes/categorias.routes.js";
@@ -13,10 +15,12 @@ import usuariosRouter from "./routes/usuarios.routes.js";
 import librosRouter from "./routes/libros.routes.js";
 
 
+
 dotenv.config();
 
 const app: Application = express();
 const PORT = process.env.PORT || 3000;
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerOutput));
 
 app.use(cors());
 app.use(express.json());

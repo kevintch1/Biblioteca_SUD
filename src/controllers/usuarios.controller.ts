@@ -3,41 +3,51 @@ import type { Request, Response } from "express";
 import { pool } from "../config/db.js";
 import { usuariosModels } from "../models/usuariosModels.js";
 import { EliminarUsuarioSchema } from "../schemas/usuariosSchemas.js"; 
-import type { GetUserQueryInput, GetUserParamsInput } from "../schemas/usuariosSchemas.js"; 
+import { GetUserQuerySchema } from "../schemas/usuariosSchemas.js";
 
 // 1. Consultar todos los usuarios
+
 export async function obtenerUsuarios(
-  req: Request<{}, {}, {}, GetUserQueryInput>, // parámetros estrictos
+  req: Request, 
   res: Response
 ) {
   try {
-   const { name, email, limit } = req.query;
+   const result = GetUserQuerySchema.safeParse(req);
 
-    
-    const usuarios = await usuariosModels.findAll({ nombre: name, correo: email, limit });
-    
-    
-    return res.status(200).json(usuarios);
-
+    if (!result.success) {
+      return res.status(400).json({
+        error: "Parámetros de consulta inválidos",
+        detalles: result.error.format(),
+      });
+    } 
+    const { nombre, correo, limit, page } = result.data.query;
+    const users = await usuariosModels.findAll({ nombre, correo, limit, page });
+    res.status(200).json(users);
   } catch (error: any) {
-    console.error("Error al obtener usuarios:", error);
-    return res.status(500).json({ message: "Error interno del servidor" });
+    console.error(error);
+    res.status(500).json({
+      error: "error al obtener todos los usuarios",
+      detalles: error.message,
+    });
   }
+
+    
 }
 
 // 2. Consultar un usuario por ID
+
 export async function obtenerUsuarioPorId(
-  req: Request<GetUserParamsInput>, // El primer parámetro tipa req.params
+  req: Request,
   res: Response
 ) {
   try {
-    // 1. Gracias al .transform(Number) de Zod, req.params.id ya es un número real aquí
-    const idBuscado = req.params.id;
+    
+    const idBuscado = Number(req.params.id);
 
-    // 2. se busca el modelo
+    
     const usuario = await usuariosModels.findById(idBuscado);
 
-    // Si el modelo retorna null o undefined marca error para ir al catch
+    
     if (!usuario) {
       return res.status(404).json({ error: "usuario no encontrado" });
     }
@@ -59,6 +69,7 @@ export async function obtenerUsuarioPorId(
 }
 
 // 3. Crear un usuario
+
 export const crearUsuario = async (req: Request, res: Response) => {
     const { nombre, tipo, correo } = req.body;
 
@@ -84,6 +95,7 @@ export const crearUsuario = async (req: Request, res: Response) => {
 };
 
 // 4. Actualizar un usuario
+
 export const actualizarUsuario = async (req: Request, res: Response) => {
     const id = Number(req.params.id);
     const { nombre, tipo, correo } = req.body;
@@ -133,26 +145,38 @@ export const actualizarUsuario = async (req: Request, res: Response) => {
     }
 };
 // 5. Eliminar un usuario
+
 export async function eliminarUsuario(req: Request, res: Response) {
     try {
         
         const validacion = EliminarUsuarioSchema.safeParse({ params: req.params });
 
-        if (isNaN(id)) {
+        if (!validacion.success) {
+            return res.status(400).json({
+                ok: false,
+                message: "Formato de parámetros inválido",
+                detalles: validacion.error.format()
+            });
+            
+        }
+        
+        const id = validacion.data.params.id;
+        const usuarioEliminado = await usuariosModels.delete(id);
+
+        if (isNaN(Number(id))) { 
             return res.status(400).json({
                 ok: false,
                 message: "formato de id invalido"
             });
+            const usuarioEliminado = await usuariosModels.delete(id); 
         }
-        const id = validacion.data.params.id;
-        const usuarioEliminado = await usuariosModels.delete(id);
-
-        if (!eliminarUsuario) {
+        if (!usuarioEliminado) {
             return res.status(404).json({
                 ok: false,
                 message: "Usuario no encontrado"
-            });
-        }
+                });
+
+                 }
 
         return res.status(200).json({
             ok: true,
