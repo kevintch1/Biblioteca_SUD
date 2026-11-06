@@ -15,7 +15,7 @@ export function validateSchema(
             if (source === "body") {
                 req.body = datos;
             } else if (source === "query") {
-                res.locals.queryValidada = datos;
+                res.locals.validatedQuery = datos;
             } else {
                 res.locals.paramsValidados = datos;
             }
@@ -26,7 +26,7 @@ export function validateSchema(
                 const flattened = z.flattenError(error);
 
                 res.status(400).json({
-                    status: "error", 
+                    status: "error",
                     message: "Error de vaidación en los datos enviados",
                     errors: flattened.fieldErrors
                 });
