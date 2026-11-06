@@ -1,12 +1,29 @@
 import { pool } from "../config/db.js";
 
 export const EjemplarModel = {
-    async listar() {
-        return pool.query(
-            "SELECT * FROM ejemplares ORDER BY id_ejemplar ASC"
-        );
-    },
+    async listar(filters: {
+        estado?: string | undefined;
+        limit?: number | undefined;
+    }) {
+        let sql = "SELECT * FROM ejemplares WHERE 1=1";
+        const values: (string | number)[] = [];
+        let paramIndex = 1;
 
+        if (filters.estado !== undefined) {
+            sql += ` AND estado = $${paramIndex}`;
+            values.push(filters.estado);
+            paramIndex++;
+        }
+
+        sql += " ORDER BY id_ejemplar ASC";
+
+        if (filters.limit !== undefined) {
+            sql += ` LIMIT $${paramIndex}`;
+            values.push(filters.limit);
+        }
+
+        return pool.query(sql, values);
+    },
     async obtenerPorId(id: number) {
         return pool.query(
             "SELECT * FROM ejemplares WHERE id_ejemplar = $1",

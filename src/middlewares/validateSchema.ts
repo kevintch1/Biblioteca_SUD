@@ -1,36 +1,39 @@
-import type { Request, Response, NextFunction } from "express";
+import type { Response, Request, NextFunction } from "express";
+import { ZodObject, ZodError } from "zod";
 import { z } from "zod";
 
+type RequestSource = "body" | "query" | "params";
+
 export function validateSchema(
-    schema: z.ZodType,
-    source: "body" | "query" = "body"
+    schema: ZodObject,
+    source: RequestSource = "body"
 ) {
     return async (req: Request, res: Response, next: NextFunction) => {
         try {
-            const data = source === "query" ? req.query : req.body;
-
-            const validatedData = await schema.parseAsync(data);
+            const datos = await schema.parseAsync(req[source]);
 
             if (source === "body") {
-                req.body = validatedData;
+                req.body = datos;
+            } else if (source === "query") {
+                res.locals.queryValidada = datos;
             } else {
-                res.locals.validatedQuery = validatedData;
+                res.locals.paramsValidados = datos;
             }
 
             next();
-
         } catch (error) {
-            if (error instanceof z.ZodError) {
+            if (error instanceof ZodError) {
                 const flattened = z.flattenError(error);
 
-                return res.status(400).json({
-                    status: "error",
-                    message: "Error de validación en los datos enviados",
-                    errors: flattened.fieldErrors,
+                res.status(400).json({
+                    status: "error", 
+                    message: "Error de vaidación en los datos enviados",
+                    errors: flattened.fieldErrors
                 });
+                return;
             }
-
             next(error);
         }
-    };
+    }
 }
+
