@@ -1,10 +1,20 @@
 import type { Request, Response } from "express";
 import { pool } from "../config/db.js";
 import { EjemplarModel } from "../models/ejemplares.model.js";
+import {
+    crearEjemplarService
+} from "../services/ejemplares.service.js";
+import { isModuleNamespaceObject } from "node:util/types";
+import type {
+    GetEjemplaresQueryInput
+} from "../schemas/EjemplaresSchema.js";
 
 export async function listarEjemplares(req: Request, res: Response) {
     try {
-        const resultado = await EjemplarModel.listar();
+        const filtros: GetEjemplaresQueryInput =
+            res.locals.queryValidada;
+
+        const resultado = await EjemplarModel.listar(filtros);
 
         res.status(200).json(resultado.rows);
     } catch (error) {
@@ -17,14 +27,7 @@ export async function listarEjemplares(req: Request, res: Response) {
 }
 
 export async function obtenerEjemplaresPorId(req:Request, res: Response) {
-    const id = Number(req.params.id);
-
-    if (!Number.isInteger(id) || id <= 0) {
-        res.status(400).json({
-            mensaje: "El ID debe ser un entero positivo"
-        });
-        return;
-    }
+    const id: number = res.locals.paramsValidados.id;
     try {
         const resultado = await EjemplarModel.obtenerPorId(id);
 
@@ -48,47 +51,32 @@ export async function obtenerEjemplaresPorId(req:Request, res: Response) {
 }
 
 export async function crearEjemplar(req: Request, res: Response) {
-    const { id_libro, estado = "Disponible" } = req.body ?? {};
-
-    if (
-        typeof id_libro !== "number" ||
-        !Number.isInteger(id_libro) ||
-        id_libro <= 0
-    ) {
-        res.status(400).json({
-            mensaje: "id_libro debe ser un entero positivo"
-        });
-        return;
-    }
-
-    if (estado !== "Disponible" && estado !== "Prestado") {
-        res.status(400).json({
-            mensaje: "El estado debe ser Disponible o Prestado"
-        });
-        return;
-    }
 
     try { 
-        const resultado = await EjemplarModel.crear(id_libro,estado);
+        const ejemplar = await crearEjemplarService(req.body);
 
-        res.status(201).json(resultado.rows[0]);
+        res.status(201).json(ejemplar);
     } catch (error) {
-        console.error("Erro al crear ejemplar:", error);
-
-        if (
-            error instanceof Error &&
-            "code" in error &&
-            error.code === "23503"
-        ) {
-            res.status(400).json({
-                mensaje: "El libro indicado no existe"
-            });
-            return;
+       if (error instanceof Error && "tipo" in error) {
+        switch (error.tipo) {
+            case "REFERENCIA_INVALIDA":
+                res.status(422).json({
+                    mensaje: error.message
+                });
+                return;
+            case "CAMPO_REQUERIDO":
+            case "VALOR_INVALIDO":
+                res.status(400).json({
+                    mensaje: error.message
+                });
+                return;
         }
+       }
 
-        res.status(500).json({
-            mensaje: "Error al crear el ejemplar"
-        });
+       console.error("Error al crear ejemplar", error);
+       res.status(500).json({
+        mensaje: "Error al crear el ejemplar"
+       });
     }
 }
 

@@ -18,6 +18,11 @@
     "dotenv": "^18.0.9",
     "express": "^5.3.0",
     "pg": "^8.23.1",
+<<<<<<< HEAD
+=======
+    "swagger-autogen": "^2.23.7",
+    "swagger-jsdoc": "^6.3.0",
+>>>>>>> b87c4a77840b55b22f068a8b86377a3c3fe8c0ee
     "swagger-ui-express": "^5.0.1",
     "zod": "^4.6.7"
   },
@@ -26,8 +31,13 @@
     "@types/express": "^5.0.6",
     "@types/node": "^26.6.6",
     "@types/pg": "^8.23.1",
+<<<<<<< HEAD
     "@types/swagger-ui-express": "^4.1.8",
     "swagger-autogen": "^2.23.7",
+=======
+    "@types/swagger-jsdoc": "^6.0.4",
+    "@types/swagger-ui-express": "^4.1.8",
+>>>>>>> b87c4a77840b55b22f068a8b86377a3c3fe8c0ee
     "tsx": "^4.23.15",
     "typescript": "^7.0.2"
   }
