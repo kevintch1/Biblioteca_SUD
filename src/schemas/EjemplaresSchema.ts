@@ -20,15 +20,27 @@ export const updateEjemplarSchema = z.object({
 export const getEjemplaresQuerySchema = z.object({
     estado: z.enum(["Disponible", "Prestado"]).optional(),
 
-    limit: z.string()
+    page: z.string()
         .regex(/^\d+$/, "El límite debe contener solo números")
         .transform(Number)
         .refine(
             (valor) => Number.isSafeInteger(valor) && valor > 0, 
-            "El límite dbe ser un entero positivo"
+            "La página debe ser un entero positivo"
         )
-        .optional()
+        .default(1),
+    limit: z.string()
+        .regex(/^\d+$/, "El límite debe contener solo números")
+        .transform(Number)
+        .refine(
+            (valor) =>
+                Number.isSafeInteger(valor) &&
+                valor >= 1 &&
+                valor <= 100,
+            "El límite debe ser un entero entre 1 y 100"
+        )
+        .default(10)
 });
+
 
 export const ejemplarIdSchema = z.object({
     id: z.string()

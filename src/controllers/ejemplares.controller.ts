@@ -5,18 +5,31 @@ import {
     crearEjemplarService
 } from "../services/ejemplares.service.js";
 import { isModuleNamespaceObject } from "node:util/types";
-import type {
-    GetEjemplaresQueryInput
-} from "../schemas/EjemplaresSchema.js";
+import {
+    getEjemplaresQuerySchema,
+    type GetEjemplaresQueryInput} from "../schemas/EjemplaresSchema.js";
 
 export async function listarEjemplares(req: Request, res: Response) {
     try {
-        const filtros: GetEjemplaresQueryInput =
-            res.locals.queryValidada;
+        const resultado = getEjemplaresQuerySchema.safeParse(req.query);
 
-        const resultado = await EjemplarModel.listar(filtros);
+        if (!resultado.success) {
+            res.status(400).json({
+                mensaje: "Parámetros de consulta inválidos",
+                errores: resultado.error.issues
+            });
+            return;
+        }
 
-        res.status(200).json(resultado.rows);
+        const { estado, page, limit } = resultado.data;
+
+        const ejemplares = await EjemplarModel.listar({
+            estado,
+            page,
+            limit
+        });
+
+        res.status(200).json(ejemplares);
     } catch (error) {
         console.error("Error al consultar ejemplares:", error);
 
