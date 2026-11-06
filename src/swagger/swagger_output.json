@@ -10,7 +10,455 @@
   "schemes": [
     "http"
   ],
+  "tags": [
+    {
+      "name": "Categorías",
+      "description": "Operaciones de categorías"
+    },
+    {
+      "name": "Autores",
+      "description": "Operaciones de autores"
+    }
+  ],
   "paths": {
+    "/api/categorias": {
+      "get": {
+        "tags": [
+          "Categorías"
+        ],
+        "summary": "Listar categorías",
+        "description": "Devuelve todas las categorías o filtra por coincidencia de nombre.",
+        "parameters": [
+          {
+            "name": "nombre",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "description": "Filtro opcional por nombre."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de categorías",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "id_categoria": {
+                    "type": "integer",
+                    "format": "int32"
+                  },
+                  "nombre": {
+                    "type": "string",
+                    "example": "Novela"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Filtro nombre inválido"
+          },
+          "500": {
+            "description": "Error interno"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Categorías"
+        ],
+        "summary": "Crear categoría",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "required": [
+                "nombre"
+              ],
+              "properties": {
+                "nombre": {
+                  "type": "string",
+                  "example": "Novela"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Categoría creada",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "id_categoria": {
+                  "type": "integer",
+                  "format": "int32"
+                },
+                "nombre": {
+                  "type": "string",
+                  "example": "Novela"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Datos inválidos"
+          },
+          "500": {
+            "description": "Error interno"
+          }
+        }
+      }
+    },
+    "/api/categorias/{id}": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "type": "integer",
+          "format": "int32"
+        }
+      ],
+      "get": {
+        "tags": [
+          "Categorías"
+        ],
+        "summary": "Consultar categoría",
+        "responses": {
+          "200": {
+            "description": "Categoría encontrada",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "id_categoria": {
+                  "type": "integer",
+                  "format": "int32"
+                },
+                "nombre": {
+                  "type": "string",
+                  "example": "Novela"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Categoría no encontrada"
+          },
+          "500": {
+            "description": "Error interno"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Categorías"
+        ],
+        "summary": "Actualizar categoría",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "required": [
+                "nombre"
+              ],
+              "properties": {
+                "nombre": {
+                  "type": "string",
+                  "example": "Novela"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Categoría actualizada",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "id_categoria": {
+                  "type": "integer",
+                  "format": "int32"
+                },
+                "nombre": {
+                  "type": "string",
+                  "example": "Novela"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Datos inválidos"
+          },
+          "404": {
+            "description": "Categoría no encontrada"
+          },
+          "500": {
+            "description": "Error interno"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Categorías"
+        ],
+        "summary": "Eliminar categoría",
+        "responses": {
+          "204": {
+            "description": "Categoría eliminada"
+          },
+          "404": {
+            "description": "Categoría no encontrada"
+          },
+          "500": {
+            "description": "Error interno"
+          }
+        }
+      }
+    },
+    "/api/autores": {
+      "get": {
+        "tags": [
+          "Autores"
+        ],
+        "summary": "Listar autores",
+        "description": "Devuelve todos los autores o filtra por coincidencia de nombre.",
+        "parameters": [
+          {
+            "name": "nombre",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "description": "Filtro opcional por nombre."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de autores",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "id_autor": {
+                    "type": "integer",
+                    "format": "int32"
+                  },
+                  "nombre": {
+                    "type": "string",
+                    "example": "Gabriel García Márquez"
+                  },
+                  "nacionalidad": {
+                    "type": "string",
+                    "x-nullable": true,
+                    "example": "Colombiana"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Filtro nombre inválido"
+          },
+          "500": {
+            "description": "Error interno"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Autores"
+        ],
+        "summary": "Crear autor",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "required": [
+                "nombre"
+              ],
+              "properties": {
+                "nombre": {
+                  "type": "string",
+                  "example": "Gabriel García Márquez"
+                },
+                "nacionalidad": {
+                  "type": "string",
+                  "x-nullable": true,
+                  "example": "Colombiana"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Autor creado",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "id_autor": {
+                  "type": "integer",
+                  "format": "int32"
+                },
+                "nombre": {
+                  "type": "string",
+                  "example": "Gabriel García Márquez"
+                },
+                "nacionalidad": {
+                  "type": "string",
+                  "x-nullable": true,
+                  "example": "Colombiana"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Datos inválidos"
+          },
+          "500": {
+            "description": "Error interno"
+          }
+        }
+      }
+    },
+    "/api/autores/{id}": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "type": "integer",
+          "format": "int32"
+        }
+      ],
+      "get": {
+        "tags": [
+          "Autores"
+        ],
+        "summary": "Consultar autor",
+        "responses": {
+          "200": {
+            "description": "Autor encontrado",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "id_autor": {
+                  "type": "integer",
+                  "format": "int32"
+                },
+                "nombre": {
+                  "type": "string",
+                  "example": "Gabriel García Márquez"
+                },
+                "nacionalidad": {
+                  "type": "string",
+                  "x-nullable": true,
+                  "example": "Colombiana"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Autor no encontrado"
+          },
+          "500": {
+            "description": "Error interno"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Autores"
+        ],
+        "summary": "Actualizar autor",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "required": [
+                "nombre"
+              ],
+              "properties": {
+                "nombre": {
+                  "type": "string",
+                  "example": "Gabriel García Márquez"
+                },
+                "nacionalidad": {
+                  "type": "string",
+                  "x-nullable": true,
+                  "example": "Colombiana"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Autor actualizado",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "id_autor": {
+                  "type": "integer",
+                  "format": "int32"
+                },
+                "nombre": {
+                  "type": "string",
+                  "example": "Gabriel García Márquez"
+                },
+                "nacionalidad": {
+                  "type": "string",
+                  "x-nullable": true,
+                  "example": "Colombiana"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Datos inválidos"
+          },
+          "404": {
+            "description": "Autor no encontrado"
+          },
+          "500": {
+            "description": "Error interno"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Autores"
+        ],
+        "summary": "Eliminar autor",
+        "responses": {
+          "204": {
+            "description": "Autor eliminado"
+          },
+          "404": {
+            "description": "Autor no encontrado"
+          },
+          "500": {
+            "description": "Error interno"
+          }
+        }
+      }
+    },
     "/": {
       "get": {
         "description": "",
