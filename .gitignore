@@ -1,8 +1,11 @@
-node_modules
 .env
-<<<<<<< HEAD
+node_modules
+database.json
 dist/
-=======
-
-
->>>>>>> e49ad0fd62ec4440b340dbbb64df33adf04f9f1e
+.envX
+.gitignoreX
+tsconfig.jsonX
+package.jsonX
+index.tsX
+router.tsX
+config/db.tsX

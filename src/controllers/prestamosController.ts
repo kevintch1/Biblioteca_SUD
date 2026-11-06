@@ -1,7 +1,6 @@
 // src/controllers/prestamosController.ts
 
-import type { Request, Response } from 'express';
-import { pool } from '../config/db.js';
+// import { pool } from '../config/db.js';
 
 // Guía Probar los Endpoints
 // http://localhost:3000/api/prestamos     1- todos los prestamos (GET):
@@ -14,158 +13,130 @@ import { pool } from '../config/db.js';
 //   {"fecha_real_devolucion": "2026-11-02"}
 // http://localhost:3000/api/prestamos/1   5- Eliminar un prestamo (DELETE):
 
+/** aqui ejec **/
+import type { Request, Response } from 'express';
+import { catchAsync } from '../utils/catchAsync.js';
+import { z } from 'zod';
+import { prestamosModel } from '../models/prestamos.model.js';
+import { createPrestamoSchema, updatePrestamoSchema } from '../middlewares/validate-Prestamos.js';
+import { AppError } from '../utils/AppError.js';
 
-// READ ALL - OBTENER TODOS LOS PRESTAMOS 
-export const getPrestamos = async (req: Request, res: Response): Promise<void> => {
-  try {
-    const sql = `
-      SELECT p.id_prestamo, p.fecha_entrega, p.fecha_limite, p.fecha_real_devolucion,
-             u.nombre AS usuario_nombre, u.correo AS usuario_correo,
-             e.id_ejemplar, e.estado AS ejemplar_estado,
-             l.titulo AS libro_titulo
-      FROM Prestamos p
-      INNER JOIN Usuarios u ON p.id_usuario = u.id_usuario
-      INNER JOIN Ejemplares e ON p.id_ejemplar = e.id_ejemplar
-      INNER JOIN Libros l ON e.id_libro = l.id_libro
-      ORDER BY p.id_prestamo DESC
-    `;
-    const { rows } = await pool.query(sql);
-    res.json(rows);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Error al obtener los préstamos' });
-  }
-};
+type CreatePrestamoInput = z.infer<typeof createPrestamoSchema>;
+type UpdatePrestamoInput = z.infer<typeof updatePrestamoSchema>;
 
-// READ ONE - OBTENER UN PRESTAMO POR ID 
-export const getPrestamoById = async (req: Request, res: Response): Promise<void> => {
+/**
+ * 1. Obtener todos los préstamos
+
+export const getPrestamos = catchAsync(async (req: Request, res: Response): Promise<void> => {
+  const prestamos = await prestamosModel.getAllPrestamos();
+  res.status(200).json(prestamos);
+});
+ */
+
+
+/**
+ * 1. Obtener todos los préstamos (Soporta Query Params de filtrado)
+ * Ejemplo: /api/prestamos?usuario_nombre=carlos&libro_titulo=clean
+ */
+export const getPrestamos = catchAsync(async (req: Request, res: Response): Promise<void> => {
+  const { 
+    id_usuario, 
+    id_ejemplar, 
+    fecha_entrega, 
+    fecha_limite, 
+    fecha_real_devolucion, 
+    usuario_nombre, 
+    libro_titulo, 
+    autor_nombre 
+  } = req.query;
+
+  const prestamos = await prestamosModel.getAllPrestamos({
+    id_usuario: id_usuario as string,
+    id_ejemplar: id_ejemplar as string,
+    fecha_entrega: fecha_entrega as string,
+    fecha_limite: fecha_limite as string,
+    fecha_real_devolucion: fecha_real_devolucion as string,
+    usuario_nombre: usuario_nombre as string,
+    libro_titulo: libro_titulo as string,
+    autor_nombre: autor_nombre as string
+  });
+
+  res.status(200).json(prestamos);
+});
+
+
+
+/**
+ * 2. Obtener un préstamo por ID
+ */
+export const getPrestamoById = catchAsync(async (req: Request, res: Response): Promise<void> => {
   const { id } = req.params;
-  try {
-    const sql = `
-      SELECT p.*, u.nombre AS usuario_nombre, l.titulo AS libro_titulo 
-      FROM Prestamos p
-      INNER JOIN Usuarios u ON p.id_usuario = u.id_usuario
-      INNER JOIN Ejemplares e ON p.id_ejemplar = e.id_ejemplar
-      INNER JOIN Libros l ON e.id_libro = l.id_libro
-      WHERE p.id_prestamo = $1
-    `;
-    const { rows } = await pool.query(sql, [id]);
-    
-    if (rows.length === 0) {
-      res.status(404).json({ error: 'Prestamo no encontrado' });
-      return;
-    }
-    
-    const prestamo = rows[0];
-
-    // Agregado de propiedad dinámica simplificado
-    if (prestamo.fecha_real_devolucion) {
-      prestamo.mensaje = 'Este préstamo ya ha sido devuelto.';
-    }
-    
-    res.json(prestamo);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Error al obtener el préstamo' });
+  if (!id || typeof id !== 'string') {
+    throw new AppError('El ID proporcionado es obligatorio.', 400);
   }
-};
 
-// CREATE - REGISTRAR PRESTAMO NUEVO
-export const createPrestamo = async (req: Request, res: Response): Promise<void> => {
+  const prestamo = await prestamosModel.getPrestamoById(id);
+  if (!prestamo) throw new AppError('Préstamo no encontrado', 404);
+
+  res.status(200).json(prestamo);
+});
+
+/**
+ * 3. Crear un nuevo préstamo
+ */
+export const createPrestamo = catchAsync(async (
+  req: Request<{}, {}, CreatePrestamoInput>, 
+  res: Response 
+): Promise<void> => {
   const { id_usuario, id_ejemplar, fecha_limite, fecha_entrega } = req.body;
+
+  const estadoEjemplar = await prestamosModel.checkEjemplarStatus(id_ejemplar);
+  if (estadoEjemplar === null) throw new AppError('El ejemplar especificado no existe', 404);
+  if (estadoEjemplar !== 'Disponible') throw new AppError('El ejemplar no está disponible en este momento', 400);
+
+  const nuevoPrestamo = await prestamosModel.createPrestamo(id_usuario, id_ejemplar, fecha_limite, fecha_entrega);
   
-  if (!id_usuario || !id_ejemplar || !fecha_limite) {
-    res.status(400).json({ error: 'Faltan campos obligatorios (id_usuario, id_ejemplar, fecha_limite)' });
-    return;
-  }
+  res.status(201).json({
+    mensaje: 'Préstamo creado con éxito',
+    datos: nuevoPrestamo
+  });
+});
 
-  try {
-    const ejemplarCheck = await pool.query('SELECT estado FROM Ejemplares WHERE id_ejemplar = $1', [id_ejemplar]);
-    
-    if (ejemplarCheck.rows.length === 0) {
-      res.status(404).json({ error: 'El ejemplar especificado no existe' });
-      return;
-    }
-    
-    if (ejemplarCheck.rows[0].estado !== 'Disponible') {
-      res.status(400).json({ error: 'El ejemplar no está disponible para préstamo actual en este momento' });
-      return;
-    }
-
-    const sqlPrestamo = `
-      INSERT INTO Prestamos (id_usuario, id_ejemplar, fecha_entrega, fecha_limite) 
-      VALUES ($1, $2, COALESCE($3, CURRENT_DATE), $4) 
-      RETURNING *`;
-    const { rows } = await pool.query(sqlPrestamo, [id_usuario, id_ejemplar, fecha_entrega || null, fecha_limite]);
-
-    await pool.query("UPDATE Ejemplares SET estado = 'Prestado' WHERE id_ejemplar = $1", [id_ejemplar]);
-
-    res.status(201).json(rows[0]);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Error al procesar el préstamo' });
-  }
-};
-
-// UPDATE - DEVOLUCION O ACTUALIZAR UN PRESTAMO 
-export const updatePrestamo = async (req: Request, res: Response): Promise<void> => {
+/**
+ * 4. Actualizar un préstamo o registrar devolución
+ */
+export const updatePrestamo = catchAsync(async (
+  req: Request<{ id: string }, {}, UpdatePrestamoInput>, 
+  res: Response
+): Promise<void> => {
   const { id } = req.params;
   const { fecha_limite, fecha_real_devolucion } = req.body;
 
-  try {
-    const prestamoActual = await pool.query('SELECT id_ejemplar, fecha_real_devolucion FROM Prestamos WHERE id_prestamo = $1', [id]);
-    
-    if (prestamoActual.rows.length === 0) {
-      res.status(404).json({ error: 'Préstamo no encontrado' });
-      return;
-    }
+  if (!id) throw new AppError('El ID proporcionado no es válido.', 400);
+  
+  const prestamoActualizado = await prestamosModel.updatePrestamo(
+    id,
+    fecha_limite ?? null,
+    fecha_real_devolucion ?? null
+  );
+  if (!prestamoActualizado) throw new AppError('Préstamo no encontrado', 404);
 
-    const { id_ejemplar, fecha_real_devolucion: devolucionPrevia } = prestamoActual.rows[0];
+  res.status(200).json({
+    mensaje: `Préstamo ${id} actualizado correctamente`,
+    datos: prestamoActualizado
+  });
+});
 
-    const sqlUpdate = `
-      UPDATE Prestamos 
-      SET fecha_limite = COALESCE($1, fecha_limite), 
-          fecha_real_devolucion = COALESCE($2, fecha_real_devolucion) 
-      WHERE id_prestamo = $3 
-      RETURNING *`;
-      
-    const { rows } = await pool.query(sqlUpdate, [fecha_limite || null, fecha_real_devolucion || null, id]);
-
-    if (fecha_real_devolucion && !devolucionPrevia) {
-      await pool.query("UPDATE Ejemplares SET estado = 'Disponible' WHERE id_ejemplar = $1", [id_ejemplar]);
-    }
-
-    res.json(rows[0]);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Error al actualizar el préstamo' });
-  }
-};
-
-// DELETE - ELIMINAR UN PRESTAMO
-export const deletePrestamo = async (req: Request, res: Response): Promise<void> => {
+/**
+ * 5. Eliminar un préstamo
+ */
+export const deletePrestamo = catchAsync(async (req: Request<{ id: string }>, res: Response): Promise<void> => {
   const { id } = req.params;
-  try {
-    const prestamo = await pool.query('SELECT id_ejemplar, fecha_real_devolucion FROM Prestamos WHERE id_prestamo = $1', [id]);
-    
-    if (prestamo.rows.length === 0) {
-      res.status(404).json({ error: 'Préstamo no encontrado' });
-      return;
-    }
+  if (!id) throw new AppError('El ID proporcionado no es válido.', 400);
 
-    const { id_ejemplar, fecha_real_devolucion } = prestamo.rows[0];
+  const eliminado = await prestamosModel.deletePrestamo(id);
+  if (!eliminado) throw new AppError('Préstamo no encontrado para eliminar', 404);
 
-    await pool.query('DELETE FROM Prestamos WHERE id_prestamo = $1', [id]);
-
-    if (!fecha_real_devolucion) {
-      await pool.query("UPDATE Ejemplares SET estado = 'Disponible' WHERE id_ejemplar = $1", [id_ejemplar]);
-    }
-
-    res.json({ message: 'Registro de préstamo eliminado correctamente' });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Error al eliminar el préstamo' });
-  }
-};
-
+  res.status(200).json({ mensaje: `Préstamo ${id} eliminado con éxito` });
+});
 // fin - archivo src/controllers/prestamosController.ts
