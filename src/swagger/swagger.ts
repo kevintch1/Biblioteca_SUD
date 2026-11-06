@@ -8,6 +8,7 @@ const doc = {
             "Documentación de la API REST de Biblioteca: Libros, Autores, Categorías, Ejemplares y Usuarios.",
     },
     host: "localhost:3000",
+    basePath: "/api",
     schemes: ["http"],
 };
 

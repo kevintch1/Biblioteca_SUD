@@ -7,11 +7,19 @@ import {
 } from "../models/libroAutorModel.js";
 
 export async function getLibroAutor(req: Request, res: Response) {
-    const { id_libro, id_autor } = res.locals.validatedQuery as GetLibroAutorQueryInput;
+    const {
+        id_libro,
+        id_autor,
+        page,
+        limit
+    } = res.locals.validatedQuery as GetLibroAutorQueryInput;
+
     try {
         const rows = await getLibroAutorModel({
             id_libro,
-            id_autor
+            id_autor,
+            page,
+            limit
         });
 
         res.json(rows);
