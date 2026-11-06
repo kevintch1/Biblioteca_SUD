@@ -24,6 +24,18 @@ export const getLibroAutorQuerySchema = z.object({
         .regex(/^[1-9]\d*$/, "El id_autor debe ser un número positivo")
         .transform(Number)
         .optional(),
+
+    page: z
+        .string()
+        .regex(/^[1-9]\d*$/, "La página debe ser un número positivo")
+        .transform(Number)
+        .default(1),
+
+    limit: z
+        .string()
+        .regex(/^[1-9]\d*$/, "El límite debe ser un número positivo")
+        .transform(Number)
+        .default(10),
 });
 
 export type CreateLibroAutorInput = z.infer<typeof createLibroAutorSchema>;

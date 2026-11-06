@@ -1,3 +1,4 @@
+
 import { Router } from "express";
 
 import {
@@ -8,11 +9,33 @@ import {
 
 import { validateSchema } from "../middlewares/validateSchema.js";
 
-import { createLibroAutorSchema, getLibroAutorQuerySchema } from "../schemas/libroaAutorSchema.js";
+import {
+    createLibroAutorSchema,
+    getLibroAutorQuerySchema
+} from "../schemas/libroaAutorSchema.js";
 
 const router = Router();
 
-router.get("/libro-autor", validateSchema(getLibroAutorQuerySchema, "query"), getLibroAutor);
+router.get("/libro-autor",
+    /* 
+        #swagger.parameters['page'] = {
+            in: 'query',
+            description: 'Número de página',
+            required: false,
+            type: 'integer',
+            default: 1
+        }
+        #swagger.parameters['limit'] = {
+            in: 'query',
+            description: 'Cantidad de registros por página',
+            required: false,
+            type: 'integer',
+            default: 10
+        }
+    */
+    validateSchema(getLibroAutorQuerySchema, "query"),
+    getLibroAutor
+);
 
 router.post("/libro-autor", validateSchema(createLibroAutorSchema), createLibroAutor);
 
