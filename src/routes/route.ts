@@ -11,34 +11,29 @@ import { validateSchema } from "../middlewares/validateSchema.js";
 
 import {
     createLibroAutorSchema,
-    getLibroAutorQuerySchema
+    getLibroAutorQuerySchema,
+    deleteLibroAutorSchema
 } from "../schemas/libroaAutorSchema.js";
 
 const router = Router();
 
-router.get("/libro-autor",
-    /* 
-        #swagger.parameters['page'] = {
-            in: 'query',
-            description: 'Número de página',
-            required: false,
-            type: 'integer',
-            default: 1
-        }
-        #swagger.parameters['limit'] = {
-            in: 'query',
-            description: 'Cantidad de registros por página',
-            required: false,
-            type: 'integer',
-            default: 10
-        }
-    */
+//mostra datos
+router.get(
+    "/libro-autor",
     validateSchema(getLibroAutorQuerySchema, "query"),
     getLibroAutor
 );
 
-router.post("/libro-autor", validateSchema(createLibroAutorSchema), createLibroAutor);
-
-router.delete("/libro-autor/:id_libro/:id_autor", deleteLibroAutor);
-
+//crea
+router.post(
+    "/libro-autor",
+    validateSchema(createLibroAutorSchema),
+    createLibroAutor
+);
+//elimina
+router.delete(
+    "/libro-autor/:id_libro/:id_autor",
+    validateSchema(deleteLibroAutorSchema, "params"),
+    deleteLibroAutor
+);
 export default router;

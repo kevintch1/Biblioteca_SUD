@@ -8,15 +8,6 @@ import {
     actualizarUsuario,
     eliminarUsuario
 } from "../controllers/usuarios.controller.js";
-<<<<<<< HEAD
-import { validateSchema } from "../middlewares/validateSchema.js"; 
-import { 
-    actualizarUsuarioSchema, 
-    crearUsuarioSchema, 
-    EliminarUsuarioSchema, 
-    obtenerUsuarioPorIdSchema, 
-    obtenerUsuariosSchema 
-=======
 
 import { validateSchema } from "../middlewares/validateSchema.js";
 
@@ -25,31 +16,17 @@ import {
     crearUsuarioSchema,
     EliminarUsuarioSchema,
     obtenerUsuarioPorIdSchema,
-    obtenerUsuariosSchema
->>>>>>> b87c4a77840b55b22f068a8b86377a3c3fe8c0ee
+    GetUserQuerySchema
 } from "../schemas/usuariosSchemas.js";
-import { 
-    GetUserQuerySchema, 
-    GetUserParamsSchema 
-} from "../schemas/usuariosSchemas.js"
 
 const router = Router();
 
-<<<<<<< HEAD
-
-router.get("/", validateSchema(GetUserQuerySchema, "query"), obtenerUsuarios);
-router.get("/:id", validateSchema(GetUserParamsSchema, "params"), obtenerUsuarioPorId);
-router.post("/", validateSchema(crearUsuarioSchema), crearUsuario);
-router.put("/:id", validateSchema(actualizarUsuarioSchema), actualizarUsuario);
-router.delete("/:id", validateSchema(EliminarUsuarioSchema), eliminarUsuario);
-=======
 // Obtener todos los usuarios
 router.get(
     "/",
-    validateSchema(obtenerUsuariosSchema, "query"),
+    validateSchema(GetUserQuerySchema, "query"),
     obtenerUsuarios
 );
->>>>>>> b87c4a77840b55b22f068a8b86377a3c3fe8c0ee
 
 // Obtener un usuario por ID
 router.get(
@@ -65,10 +42,10 @@ router.post(
     crearUsuario
 );
 
-// Actualizar un usuario
 router.put(
     "/:id",
-    validateSchema(actualizarUsuarioSchema, "body"),
+    validateSchema(obtenerUsuarioPorIdSchema, "params"),
+    validateSchema(actualizarUsuarioSchema.omit({ id: true }), "body"),
     actualizarUsuario
 );
 
