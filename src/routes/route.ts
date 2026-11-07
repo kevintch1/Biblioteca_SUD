@@ -11,30 +11,29 @@ import { validateSchema } from "../middlewares/validateSchema.js";
 
 import {
     createLibroAutorSchema,
-    getLibroAutorQuerySchema
+    getLibroAutorQuerySchema,
+    deleteLibroAutorSchema
 } from "../schemas/libroaAutorSchema.js";
 
 const router = Router();
 
-// Obtener relaciones con filtros y paginación
+//mostra datos
 router.get(
     "/libro-autor",
     validateSchema(getLibroAutorQuerySchema, "query"),
     getLibroAutor
 );
 
-// Crear relación entre libro y autor
+//crea
 router.post(
     "/libro-autor",
     validateSchema(createLibroAutorSchema),
     createLibroAutor
 );
-
-// Eliminar relación entre libro y autor
+//elimina
 router.delete(
     "/libro-autor/:id_libro/:id_autor",
-    getLibroAutor,
+    validateSchema(deleteLibroAutorSchema, "params"),
     deleteLibroAutor
 );
-
 export default router;

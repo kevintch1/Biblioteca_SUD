@@ -1,3 +1,4 @@
+
 import type { RequestHandler } from "express";
 import type { ZodType } from "zod";
 
@@ -14,6 +15,7 @@ export function validateParams(schema: ZodType): RequestHandler {
             return;
         }
 
+        res.locals.paramsValidados = resultado.data;
         next();
     };
 }

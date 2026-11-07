@@ -67,17 +67,10 @@ export async function createLibroAutor(req: Request, res: Response) {
 }
 
 export async function deleteLibroAutor(req: Request, res: Response) {
-    const id_libro = Number(req.params.id_libro);
-    const id_autor = Number(req.params.id_autor);
-
-    if (
-        !Number.isInteger(id_libro) || id_libro <= 0 ||
-        !Number.isInteger(id_autor) || id_autor <= 0
-    ) {
-        return res.status(400).json({
-            error: "Los IDs deben ser números enteros positivos",
-        });
-    }
+    const { id_libro, id_autor } = res.locals.paramsValidados as {
+        id_libro: number;
+        id_autor: number;
+    };
 
     try {
         const data = await deleteLibroAutorModel(id_libro, id_autor);
