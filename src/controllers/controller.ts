@@ -1,5 +1,7 @@
+
 import type { Request, Response } from "express";
 import type { GetLibroAutorQueryInput } from "../schemas/libroaAutorSchema.js";
+
 import {
     getLibroAutorModel,
     createLibroAutorModel,
@@ -15,14 +17,14 @@ export async function getLibroAutor(req: Request, res: Response) {
     } = res.locals.validatedQuery as GetLibroAutorQueryInput;
 
     try {
-        const rows = await getLibroAutorModel({
+        const result = await getLibroAutorModel({
             id_libro,
             id_autor,
             page,
             limit
         });
 
-        res.json(rows);
+        res.json(result);
 
     } catch (error) {
         console.error(error);
@@ -90,6 +92,7 @@ export async function deleteLibroAutor(req: Request, res: Response) {
             mensaje: "Relación libro-autor eliminada con éxito",
             data,
         });
+
     } catch (error) {
         console.error(error);
         return res.status(500).json({
