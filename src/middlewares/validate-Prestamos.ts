@@ -141,4 +141,54 @@ export const validateUpdatePrestamo = (req: Request, res: Response, next: NextFu
   next();
 };
 
-// fin - src/middlewares/validate-Prestamos.ts
+// 3. Esquema de validación para los QUERY PARAMS de búsqueda y paginación (GET)
+export const queryPrestamoSchema = z.object({
+  id_usuario: z.string().optional(),
+  id_ejemplar: z.string().optional(),
+  
+    // zFechaSchema incorporado superRefine y valida el calendario
+  fecha_entrega: zFechaSchema.optional(),
+  fecha_limite: zFechaSchema.optional(),
+  fecha_real_devolucion: zFechaSchema.optional(),
+  
+  usuario_nombre: z.string().optional(),
+  libro_titulo: z.string().optional(),
+  autor_nombre: z.string().optional(),
+  
+  // Validación y transformación segura para 'limit'
+  limit: z
+    .string()
+    .optional()
+    .transform((val) => (val ? parseInt(val, 10) : undefined))
+    .refine((val) => val === undefined || (!isNaN(val) && val > 0), {
+      message: "El parámetro 'limit' debe ser un número entero mayor a 0",
+    }),
+
+  // Validación y transformación segura para 'page'
+  page: z
+    .string()
+    .optional()
+    .transform((val) => (val ? parseInt(val, 10) : undefined))
+    .refine((val) => val === undefined || (!isNaN(val) && val > 0), {
+      message: "El parámetro 'page' debe ser un número entero mayor a 0",
+    }),
+});
+
+// Middleware interceptor para el GET de Préstamos
+export const validateQueryPrestamo = (req: Request, res: Response, next: NextFunction): void => {
+  const result = queryPrestamoSchema.safeParse(req.query);
+  if (!result.success) {
+    const errores = result.error.issues.map((err: z.ZodIssue) => ({
+      campo: err.path.join("."),
+      mensaje: err.message
+    }));
+    res.status(400).json({ error: "Parámetros de consulta inválidos", detalles: errores });
+    return;
+  }
+  
+  // forma segura sin reasignar req.query completo
+  Object.assign(req.query, result.data);
+  
+  next();
+};
+// fin - src/middlewares/validate-Prestamos.ts 

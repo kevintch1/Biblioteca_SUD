@@ -11,4 +11,4 @@ export class AppError extends Error {
     Object.setPrototypeOf(this, AppError.prototype); // CORREGIDO
   }
 }
-// fin - archivo src/utils/AppError.ts
+// fin - archivo src/utils/AppError.ts 

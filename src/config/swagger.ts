@@ -16,10 +16,10 @@ const options: swaggerJsdoc.Options = {
       },
     ],
   },
-  // Ruta donde Swagger buscará los comentarios JSDoc
+  // Ruta donde Swagger busca los comentarios JSDoc
   apis: ['./src/routes/*.ts', './src/routes/**/*.ts'],
 };
 
 export const swaggerSpec = swaggerJsdoc(options);
 
-// fin - src/config/swagger.ts
+// fin - src/config/swagger.ts 

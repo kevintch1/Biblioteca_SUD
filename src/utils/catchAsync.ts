@@ -8,4 +8,4 @@ export const catchAsync = (
     fn(req, res, next).catch(next); // Envía el error al middleware global
   };
 };
-// fin - archivo src/utils/catchAsync.ts
+// fin - archivo src/utils/catchAsync.ts 

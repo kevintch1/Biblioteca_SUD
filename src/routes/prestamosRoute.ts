@@ -1,16 +1,18 @@
 // src/routes/prestamosRoute.ts
 
 import { Router } from 'express';
-import { 
-  getPrestamos, 
-  getPrestamoById, 
-  createPrestamo, 
-  updatePrestamo, 
-  deletePrestamo, 
-} from '../controllers/prestamosController.js';
-import { validateCreatePrestamo, validateUpdatePrestamo } from '../middlewares/validate-Prestamos.js';
+import { getPrestamos,   getPrestamoById, 
+         createPrestamo, updatePrestamo,  deletePrestamo, } 
+         from '../controllers/prestamosController.js';
+import { validateCreatePrestamo, validateUpdatePrestamo } 
+         from '../middlewares/validate-Prestamos.js';
+import { validateQueryPrestamo } 
+         from '../middlewares/validate-Prestamos.js';
 
 const router = Router();
+
+// Validar Query Params antes del controlador
+router.get('/', validateQueryPrestamo, getPrestamos);
 
 /**
  * @swagger
@@ -224,4 +226,4 @@ router.put('/:id', validateUpdatePrestamo, updatePrestamo);
 router.delete('/:id', deletePrestamo);
 
 export default router;
-// fin - archivo src/routes/prestamosRoute.ts
+// fin - archivo src/routes/prestamosRoute.ts 

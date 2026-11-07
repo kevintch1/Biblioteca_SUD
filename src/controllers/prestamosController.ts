@@ -1,7 +1,5 @@
 // src/controllers/prestamosController.ts
 
-// import { pool } from '../config/db.js';
-
 // Guía Probar los Endpoints
 // http://localhost:3000/api/prestamos     1- todos los prestamos (GET):
 // http://localhost:3000/api/prestamos/2   2- Obtener prestamo especifico (GET):
@@ -15,6 +13,7 @@
 
 /** aqui ejec **/
 import type { Request, Response } from 'express';
+import type { ParamsDictionary, Query } from 'express-serve-static-core'; 
 import { catchAsync } from '../utils/catchAsync.js';
 import { z } from 'zod';
 import { prestamosModel } from '../models/prestamos.model.js';
@@ -24,52 +23,15 @@ import { AppError } from '../utils/AppError.js';
 type CreatePrestamoInput = z.infer<typeof createPrestamoSchema>;
 type UpdatePrestamoInput = z.infer<typeof updatePrestamoSchema>;
 
-/**
- * 1. Obtener todos los préstamos
-
-export const getPrestamos = catchAsync(async (req: Request, res: Response): Promise<void> => {
-  const prestamos = await prestamosModel.getAllPrestamos();
-  res.status(200).json(prestamos);
-});
- */
-
 
 /**
- * 1. Obtener todos los préstamos (Soporta Query Params de filtrado)
- * Ejemplo: /api/prestamos?usuario_nombre=carlos&libro_titulo=clean
+ * 1. Obtener un prestamo por ID
  */
-export const getPrestamos = catchAsync(async (req: Request, res: Response): Promise<void> => {
-  const { 
-    id_usuario, 
-    id_ejemplar, 
-    fecha_entrega, 
-    fecha_limite, 
-    fecha_real_devolucion, 
-    usuario_nombre, 
-    libro_titulo, 
-    autor_nombre 
-  } = req.query;
-
-  const prestamos = await prestamosModel.getAllPrestamos({
-    id_usuario: id_usuario as string,
-    id_ejemplar: id_ejemplar as string,
-    fecha_entrega: fecha_entrega as string,
-    fecha_limite: fecha_limite as string,
-    fecha_real_devolucion: fecha_real_devolucion as string,
-    usuario_nombre: usuario_nombre as string,
-    libro_titulo: libro_titulo as string,
-    autor_nombre: autor_nombre as string
-  });
-
-  res.status(200).json(prestamos);
-});
-
-
-
-/**
- * 2. Obtener un préstamo por ID
- */
-export const getPrestamoById = catchAsync(async (req: Request, res: Response): Promise<void> => {
+// export const getPrestamoById = catchAsync( async (
+//  req: Request, res: Response): Promise<void> => {
+export const getPrestamoById = catchAsync(async (
+  req: Request<ParamsDictionary>,   
+  res: Response  ): Promise<void> => {
   const { id } = req.params;
   if (!id || typeof id !== 'string') {
     throw new AppError('El ID proporcionado es obligatorio.', 400);
@@ -82,12 +44,50 @@ export const getPrestamoById = catchAsync(async (req: Request, res: Response): P
 });
 
 /**
- * 3. Crear un nuevo préstamo
+ * 2. Obtener todos los préstamos (Soporta Query Params de filtrado)
+ * Ejemplo: /api/prestamos?usuario_nombre=carlos&libro_titulo=clean
  */
+// export const getPrestamos = catchAsync(async (
+//  req: Request, res: Response): Promise<void> => {
+export const getPrestamos = catchAsync(async (
+  req: Request<ParamsDictionary, any, any, Query>, 
+  res: Response ): Promise<void> => {
+  const { 
+    id_usuario,            id_ejemplar, 
+    fecha_entrega,         fecha_limite, 
+    fecha_real_devolucion, usuario_nombre, 
+    libro_titulo,          autor_nombre,
+    limit,                 page  
+  } = req.query;
+
+  const prestamos = await prestamosModel.getAllPrestamos({
+    id_usuario: id_usuario as string,
+    id_ejemplar: id_ejemplar as string,
+    fecha_entrega: fecha_entrega as string,
+    fecha_limite: fecha_limite as string,
+    fecha_real_devolucion: fecha_real_devolucion as string,
+    usuario_nombre: usuario_nombre as string,
+    libro_titulo: libro_titulo as string,
+    autor_nombre: autor_nombre as string,
+    limit: limit as string,
+    page: page as string
+  });
+
+  res.status(200).json(prestamos);
+});
+
+
+
+/**
+ * 3. Crear un nuevo prestamo
+ */
+//export const createPrestamo = catchAsync(async (
+//  req: Request<{}, {}, CreatePrestamoInput>, 
+//  res: Response ): Promise<void> => {
 export const createPrestamo = catchAsync(async (
-  req: Request<{}, {}, CreatePrestamoInput>, 
-  res: Response 
-): Promise<void> => {
+  req: Request<ParamsDictionary, any, CreatePrestamoInput>, 
+  res: Response ): Promise<void> => {
+
   const { id_usuario, id_ejemplar, fecha_limite, fecha_entrega } = req.body;
 
   const estadoEjemplar = await prestamosModel.checkEjemplarStatus(id_ejemplar);
@@ -103,12 +103,11 @@ export const createPrestamo = catchAsync(async (
 });
 
 /**
- * 4. Actualizar un préstamo o registrar devolución
+ * 4. Actualizar un prestamo o registrar devolucion
  */
 export const updatePrestamo = catchAsync(async (
   req: Request<{ id: string }, {}, UpdatePrestamoInput>, 
-  res: Response
-): Promise<void> => {
+  res: Response ): Promise<void> => {
   const { id } = req.params;
   const { fecha_limite, fecha_real_devolucion } = req.body;
 

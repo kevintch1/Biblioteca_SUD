@@ -50,4 +50,4 @@ export const errorHandler: ErrorRequestHandler = (
     detalles: 'Ocurrio un problema inesperado. Por favor, intente más tarde.',
   });
 };
-// fin - archivo src/middlewares/errorHandler.ts
+// fin - archivo src/middlewares/errorHandler.ts 
