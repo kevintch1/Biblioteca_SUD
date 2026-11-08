@@ -27,6 +27,9 @@ const doc = {
 
 const outputFile = "./src/swagger/swagger_output.json";
 
+
+const routes = ["./src/index.ts"];
+
 const routers = [
     { name: "libros", file: "./src/routes/libros.routes.ts", prefix: "/libros", tag: "Libros" },
     { name: "usuarios", file: "./src/routes/usuarios.routes.ts", prefix: "/usuarios", tag: "Usuarios" },
@@ -36,6 +39,7 @@ const routers = [
     { name: "prestamos", file: "./src/routes/prestamosRoute.ts", prefix: "/prestamos", tag: "Préstamos" },
     { name: "libro-autor", file: "./src/routes/route.ts", prefix: "", tag: "Libro-Autor" },
 ];
+
 
 async function generarSwagger() {
     const carpetaTemporal = await mkdtemp(

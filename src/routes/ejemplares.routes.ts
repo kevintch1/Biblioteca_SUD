@@ -9,6 +9,13 @@ import {
     ejemplarIdSchema
 } from "../schemas/EjemplaresSchema.js";
 
+
+router.get("/",listarEjemplares);
+router.get("/:id", validateSchema(ejemplarIdSchema, "params"), obtenerEjemplaresPorId);
+router.post("/", validateSchema(createEjemplarSchema), crearEjemplar);
+router.put("/:id", validateSchema(updateEjemplarSchema),actualizaEjemplar);
+router.delete("/:id", eliminarEjemplar);
+
 import {
     actualizaEjemplar,
     eliminarEjemplar,
