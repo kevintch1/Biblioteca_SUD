@@ -1,3 +1,4 @@
+
 import type { Request, Response } from "express";
 import {
     createAuthor as insertAuthor,
@@ -9,7 +10,9 @@ import {
 import { autorBodySchema } from "../schemas/autores.schema.js";
 import type { z } from "zod";
 
-type IdParams = { id: string };
+type ValidatedIdParams = {
+    id: number;
+};
 
 async function handleDatabaseError(
     res: Response,
@@ -20,16 +23,23 @@ async function handleDatabaseError(
     } catch (error) {
         console.error(error);
         if (!res.headersSent) {
-            res.status(500).json({ error: "Error interno al consultar la base de datos." });
+            res.status(500).json({
+                error: "Error interno al consultar la base de datos.",
+            });
         }
     }
 }
 
-export async function getAuthors(req: Request, res: Response): Promise<void> {
+export async function getAuthors(
+    req: Request,
+    res: Response,
+): Promise<void> {
     const nombre = req.query.nombre;
 
     if (nombre !== undefined && typeof nombre !== "string") {
-        res.status(400).json({ error: "El filtro nombre debe ser un texto." });
+        res.status(400).json({
+            error: "El filtro nombre debe ser un texto.",
+        });
         return;
     }
 
@@ -40,15 +50,22 @@ export async function getAuthors(req: Request, res: Response): Promise<void> {
     });
 }
 
-export async function getAuthor(req: Request<IdParams>, res: Response): Promise<void> {
-    const id = Number(req.params.id);
+export async function getAuthor(
+    req: Request,
+    res: Response,
+): Promise<void> {
+    const { id } = res.locals.paramsValidados as ValidatedIdParams;
 
     await handleDatabaseError(res, async () => {
         const author = await findAuthorById(id);
+
         if (!author) {
-            res.status(404).json({ error: "Autor no encontrado." });
+            res.status(404).json({
+                error: "Autor no encontrado.",
+            });
             return;
         }
+
         res.json(author);
     });
 }
@@ -64,37 +81,57 @@ export async function createAuthor(
     const { nombre, nacionalidad } = req.body;
 
     await handleDatabaseError(res, async () => {
-        res.status(201).json(await insertAuthor(nombre, nacionalidad ?? null));
+        res.status(201).json(
+            await insertAuthor(nombre, nacionalidad ?? null),
+        );
     });
 }
 
 export async function updateAuthor(
-    req: Request<IdParams, unknown, z.infer<typeof autorBodySchema>>,
+    req: Request<
+        Record<string, string>,
+        unknown,
+        z.infer<typeof autorBodySchema>
+    >,
     res: Response,
 ): Promise<void> {
-    const id = Number(req.params.id);
-
+    const { id } = res.locals.paramsValidados as ValidatedIdParams;
     const { nombre, nacionalidad } = req.body;
 
     await handleDatabaseError(res, async () => {
-        const author = await saveAuthor(id, nombre, nacionalidad ?? null);
+        const author = await saveAuthor(
+            id,
+            nombre,
+            nacionalidad ?? null,
+        );
+
         if (!author) {
-            res.status(404).json({ error: "Autor no encontrado." });
+            res.status(404).json({
+                error: "Autor no encontrado.",
+            });
             return;
         }
+
         res.json(author);
     });
 }
 
-export async function deleteAuthor(req: Request<IdParams>, res: Response): Promise<void> {
-    const id = Number(req.params.id);
+export async function deleteAuthor(
+    req: Request,
+    res: Response,
+): Promise<void> {
+    const { id } = res.locals.paramsValidados as ValidatedIdParams;
 
     await handleDatabaseError(res, async () => {
         const deletedRows = await removeAuthor(id);
+
         if (deletedRows === 0) {
-            res.status(404).json({ error: "Autor no encontrado." });
+            res.status(404).json({
+                error: "Autor no encontrado.",
+            });
             return;
         }
+
         res.status(204).send();
     });
 }

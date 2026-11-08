@@ -3,26 +3,53 @@ import { pool } from "../config/db.js";
 export const EjemplarModel = {
     async listar(filters: {
         estado?: string | undefined;
-        limit?: number | undefined;
+        page: number;
+        limit: number;
     }) {
-        let sql = "SELECT * FROM ejemplares WHERE 1=1";
+        const { estado, page, limit } = filters;
+
+        let sqlBase = "WHERE 1=1";
         const values: (string | number)[] = [];
         let paramIndex = 1;
 
-        if (filters.estado !== undefined) {
-            sql += ` AND estado = $${paramIndex}`;
-            values.push(filters.estado);
+        if (estado !== undefined) {
+            sqlBase += ` AND estado = $${paramIndex}`;
+            values.push(estado);
             paramIndex++;
         }
 
-        sql += " ORDER BY id_ejemplar ASC";
+        const countQuery = `
+            SELECT COUNT(*) AS total
+            FROM ejemplares
+            ${sqlBase}
+        `;
 
-        if (filters.limit !== undefined) {
-            sql += ` LIMIT $${paramIndex}`;
-            values.push(filters.limit);
-        }
+        const countResult = await pool.query(countQuery, values);
+        const totalItem = Number(countResult.rows[0].total);
 
-        return pool.query(sql, values);
+        const offset = (page - 1) * limit;
+
+        const dataQuery = `
+            SELECT *
+            FROM ejemplares
+            ${sqlBase}
+            ORDER BY id_ejemplar ASC
+            LIMIT $${paramIndex}
+            OFFSET $${paramIndex + 1}
+        `;
+
+        const queryValues = [...values, limit, offset];
+        const { rows } = await pool.query(dataQuery, queryValues);
+
+        return {
+            data: rows,
+            pagination: {
+                totalItem, 
+                itemsPerPage: limit,
+                currentPage: page,
+                totalPages: Math.ceil(totalItem / limit)
+            }
+        };
     },
     async obtenerPorId(id: number) {
         return pool.query(

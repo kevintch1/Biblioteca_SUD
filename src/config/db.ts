@@ -1,3 +1,4 @@
+
 import pkg from "pg";
 import dotenv from "dotenv";
 
@@ -9,6 +10,6 @@ export const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
 });
 
-export function query(text: string, params?: any[]) {
-    return pool.query(text, params);
-}
+// Función auxiliar para ejecutar consultas SQL
+export const query = (text: string, params?: any[]) =>
+    pool.query(text, params);

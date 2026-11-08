@@ -1,6 +1,5 @@
-import type { Request, Response } from "express";
-import { pool } from "../config/db.js";
 import { EjemplarModel } from "../models/ejemplares.model.js";
+
 import {
     crearEjemplarService
 } from "../services/ejemplares.service.js";
@@ -276,7 +275,11 @@ export async function actualizaEjemplar(req: Request, res: Response) {
     }
 
 
+interface CrearEjemplarDatos {
+    id_libro: number;
+    estado: string;
 }
+
 
 export async function eliminarEjemplar(req: Request, res: Response) {
     // #swagger.tags = ['Ejemplares']
@@ -320,36 +323,32 @@ export async function eliminarEjemplar(req: Request, res: Response) {
         return;
     }
 
+
+export async function crearEjemplarService(datos: CrearEjemplarDatos) {
+
     try {
-        const resultado = await EjemplarModel.eliminar(id);
+        const resultado = await EjemplarModel.crear(
+            datos.id_libro,
+            datos.estado
+        );
 
-        if (resultado.rows.length === 0) {
-            res.status(404).json({
-                mensaje: "Ejemplar no encontrado"
-            });
-            return;
-        }
-
-        res.status(200).json({
-            mensaje: "Ejemplar eliminado correctamente",
-            data: resultado.rows[0]
-        });
+        return resultado.rows[0];
     } catch (error) {
-        console.error("Error al eliminar ejemplar:", error);
+        if (error instanceof Error && "code" in error) {
+            if (error.code === "23503") {
+                throw Object.assign(
+                    new Error("El libro indicado no existe"),
+                    { tipo: "REFERENCIA_INVALIDA" }
+                );
+            }
 
-        if (
-            error instanceof Error &&
-            "code" in error &&
-            error.code === "23503"
-        ) {
-            res.status(409).json({
-                mensaje: "No se puede eliminar: el ejemplar tiene préstamos registrados"
-            });
-            return;
+            if (error.code === "23514") {
+                throw Object.assign(
+                    new Error("Los datos incumplen una regla de la base"), 
+                    { tipo: "VALOR_INVALIDO" }
+                );
+            }
         }
-
-        res.status(500).json({
-            mensaje: "Error al eliminar el ejemplar"
-        });
+        throw error;
     }
 }

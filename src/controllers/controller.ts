@@ -1,5 +1,7 @@
+
 import type { Request, Response } from "express";
 import type { GetLibroAutorQueryInput } from "../schemas/libroaAutorSchema.js";
+
 import {
     getLibroAutorModel,
     createLibroAutorModel,
@@ -7,14 +9,22 @@ import {
 } from "../models/libroAutorModel.js";
 
 export async function getLibroAutor(req: Request, res: Response) {
-    const { id_libro, id_autor } = res.locals.validatedQuery as GetLibroAutorQueryInput;
+    const {
+        id_libro,
+        id_autor,
+        page,
+        limit
+    } = res.locals.validatedQuery as GetLibroAutorQueryInput;
+
     try {
-        const rows = await getLibroAutorModel({
+        const result = await getLibroAutorModel({
             id_libro,
-            id_autor
+            id_autor,
+            page,
+            limit
         });
 
-        res.json(rows);
+        res.json(result);
 
     } catch (error) {
         console.error(error);
@@ -57,17 +67,10 @@ export async function createLibroAutor(req: Request, res: Response) {
 }
 
 export async function deleteLibroAutor(req: Request, res: Response) {
-    const id_libro = Number(req.params.id_libro);
-    const id_autor = Number(req.params.id_autor);
-
-    if (
-        !Number.isInteger(id_libro) || id_libro <= 0 ||
-        !Number.isInteger(id_autor) || id_autor <= 0
-    ) {
-        return res.status(400).json({
-            error: "Los IDs deben ser números enteros positivos",
-        });
-    }
+    const { id_libro, id_autor } = res.locals.paramsValidados as {
+        id_libro: number;
+        id_autor: number;
+    };
 
     try {
         const data = await deleteLibroAutorModel(id_libro, id_autor);
@@ -82,6 +85,7 @@ export async function deleteLibroAutor(req: Request, res: Response) {
             mensaje: "Relación libro-autor eliminada con éxito",
             data,
         });
+
     } catch (error) {
         console.error(error);
         return res.status(500).json({

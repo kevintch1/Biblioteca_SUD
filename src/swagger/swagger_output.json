@@ -2,20 +2,110 @@
   "swagger": "2.0",
   "info": {
     "title": "API Biblioteca",
-    "description": "Documentación de la API REST de Biblioteca: Libros, Autores, Categorías, Ejemplares y Usuarios.",
+    "description": "Documentación de la API REST de Biblioteca: Libros, Autores, Categorías, Ejemplares, Usuarios, Préstamos y Libro-Autor.",
     "version": "1.0.0"
   },
   "host": "localhost:3000",
-  "basePath": "/",
+  "basePath": "/api",
+  "tags": [
+    {
+      "name": "Libros",
+      "description": "Gestión de libros"
+    },
+    {
+      "name": "Usuarios",
+      "description": "Gestión de usuarios"
+    },
+    {
+      "name": "Autores",
+      "description": "Gestión de autores"
+    },
+    {
+      "name": "Categorías",
+      "description": "Gestión de categorías"
+    },
+    {
+      "name": "Ejemplares",
+      "description": "Gestión de ejemplares"
+    },
+    {
+      "name": "Préstamos",
+      "description": "Gestión de préstamos"
+    },
+    {
+      "name": "Libro-Autor",
+      "description": "Relación entre libros y autores"
+    }
+  ],
   "schemes": [
     "http"
   ],
   "paths": {
+
     "/api/categorias/": {
+
+    "/libros": {
+      "get": {
+        "description": "",
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "tags": [
+          "Libros"
+        ]
+      },
+      "post": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "titulo": {
+                  "example": "any"
+                },
+                "editorial": {
+                  "example": "any"
+                },
+                "anio_publicacion": {
+                  "example": "any"
+                },
+                "id_categoria": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "tags": [
+          "Libros"
+        ]
+      }
+    },
+    "/libros/{id}": {
       "get": {
         "description": "",
         "parameters": [
           {
+
             "name": "nombre",
             "in": "query",
             "type": "string"
@@ -58,6 +148,7 @@
         "description": "",
         "parameters": [
           {
+
             "name": "id",
             "in": "path",
             "required": true,
@@ -105,6 +196,18 @@
         }
       },
       "delete": {
+
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "tags": [
+          "Libros"
+        ]
+      },
+      "put": {
+ 
         "description": "",
         "parameters": [
           {
@@ -149,6 +252,8 @@
       "post": {
         "description": "",
         "parameters": [
+
+          },
           {
             "name": "body",
             "in": "body",
@@ -214,6 +319,18 @@
                   "example": "any"
                 },
                 "nacionalidad": {
+
+                "titulo": {
+                  "example": "any"
+                },
+                "editorial": {
+                  "example": "any"
+                },
+                "anio_publicacion": {
+                  "example": "any"
+                },
+                "id_categoria": {
+ 
                   "example": "any"
                 }
               }
@@ -239,6 +356,9 @@
         "responses": {
           "204": {
             "description": "No Content"
+
+          "200": {
+            "description": "OK"
           },
           "400": {
             "description": "Bad Request"
@@ -258,6 +378,7 @@
           },
           "400": {
             "description": "Bad Request"
+
           },
           "500": {
             "description": "Internal Server Error"
@@ -300,6 +421,12 @@
       }
     },
     "/api/libro-autor/{id_libro}/{id_autor}": {
+
+        },
+        "tags": [
+          "Libros"
+        ]
+      },
       "delete": {
         "description": "",
         "parameters": [
@@ -311,6 +438,8 @@
           },
           {
             "name": "id_autor",
+
+            "name": "id",
             "in": "path",
             "required": true,
             "type": "string"
@@ -326,7 +455,7 @@
           "404": {
             "description": "Not Found"
           },
-          "500": {
+                "500": {
             "description": "Internal Server Error"
           }
         }
@@ -555,8 +684,33 @@
         "responses": {
           "400": {
             "description": "Bad Request"
+=======
+          "500": {
+            "description": "Internal Server Error"
           }
-        }
+        },
+        "tags": [
+          "Libros"
+        ]
+      }
+    },
+    "/usuarios": {
+      "get": {
+        "description": "",
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "tags": [
+          "Usuarios"
+        ]
       },
       "post": {
         "description": "",
@@ -587,13 +741,22 @@
           "400": {
             "description": "Bad Request"
           },
+
+          "409": {
+            "description": "Conflict"
+          },
           "500": {
             "description": "Internal Server Error"
           }
-        }
+        },
+        "tags": [
+          "Usuarios"
+        ]
       }
     },
     "/api/usuarios/{id}": {
+
+    "/usuarios/{id}": {
       "get": {
         "description": "",
         "parameters": [
@@ -617,7 +780,10 @@
           "500": {
             "description": "Internal Server Error"
           }
-        }
+        },
+        "tags": [
+          "Usuarios"
+        ]
       },
       "put": {
         "description": "",
@@ -657,10 +823,16 @@
           "404": {
             "description": "Not Found"
           },
+          "409": {
+            "description": "Conflict"
+          },
           "500": {
             "description": "Internal Server Error"
           }
-        }
+        },
+        "tags": [
+          "Usuarios"
+        ]
       },
       "delete": {
         "description": "",
@@ -685,7 +857,581 @@
           "500": {
             "description": "Internal Server Error"
           }
-        }
+        },
+        "tags": [
+          "Usuarios"
+        ]
+      }
+    },
+    "/autores": {
+      "get": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "nombre",
+            "in": "query",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          }
+        },
+        "tags": [
+          "Autores"
+        ]
+      },
+      "post": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "nombre": {
+                  "example": "any"
+                },
+                "nacionalidad": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Bad Request"
+          }
+        },
+        "tags": [
+          "Autores"
+        ]
+      }
+    },
+    "/autores/{id}": {
+      "get": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "tags": [
+          "Autores"
+        ]
+      },
+      "put": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "nombre": {
+                  "example": "any"
+                },
+                "nacionalidad": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Bad Request"
+          }
+        },
+        "tags": [
+          "Autores"
+        ]
+      },
+      "delete": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "tags": [
+          "Autores"
+        ]
+      }
+    },
+    "/categorias": {
+      "get": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "nombre",
+            "in": "query",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          }
+        },
+        "tags": [
+          "Categorías"
+        ]
+      },
+      "post": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "nombre": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Bad Request"
+          }
+        },
+        "tags": [
+          "Categorías"
+        ]
+      }
+    },
+    "/categorias/{id}": {
+      "get": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "tags": [
+          "Categorías"
+        ]
+      },
+      "put": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "nombre": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Bad Request"
+          }
+        },
+        "tags": [
+          "Categorías"
+        ]
+      },
+      "delete": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "tags": [
+          "Categorías"
+        ]
+      }
+    },
+    "/ejemplares": {
+      "get": {
+        "description": "",
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "tags": [
+          "Ejemplares"
+        ]
+      },
+      "post": {
+        "description": "",
+        "responses": {
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "422": {
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "tags": [
+          "Ejemplares"
+        ]
+      }
+    },
+    "/ejemplares/{id}": {
+      "get": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "tags": [
+          "Ejemplares"
+        ]
+      },
+      "put": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "id_libro": {
+                  "example": "any"
+                },
+                "estado": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "tags": [
+          "Ejemplares"
+        ]
+      },
+      "delete": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "409": {
+            "description": "Conflict"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "tags": [
+          "Ejemplares"
+        ]
+      }
+    },
+    "/prestamos": {
+      "get": {
+        "description": "",
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "tags": [
+          "Préstamos"
+        ]
+      },
+      "post": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "id_usuario": {
+                  "example": "any"
+                },
+                "id_ejemplar": {
+                  "example": "any"
+                },
+                "fecha_limite": {
+                  "example": "any"
+                },
+                "fecha_entrega": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "tags": [
+          "Préstamos"
+        ]
+      }
+    },
+    "/prestamos/{id}": {
+      "get": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "tags": [
+          "Préstamos"
+        ]
+      },
+      "put": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "fecha_limite": {
+                  "example": "any"
+                },
+                "fecha_real_devolucion": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "tags": [
+          "Préstamos"
+        ]
+      },
+      "delete": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "tags": [
+          "Préstamos"
+        ]
       }
     },
     "/api/libros/": {
@@ -698,7 +1444,10 @@
           "500": {
             "description": "Internal Server Error"
           }
-        }
+        },
+        "tags": [
+          "Libro-Autor"
+        ]
       },
       "post": {
         "description": "",
@@ -735,7 +1484,10 @@
           "500": {
             "description": "Internal Server Error"
           }
-        }
+        },
+        "tags": [
+          "Libro-Autor"
+        ]
       }
     },
     "/api/libros/{id}": {
@@ -833,7 +1585,10 @@
           "500": {
             "description": "Internal Server Error"
           }
-        }
+        },
+        "tags": [
+          "Libro-Autor"
+        ]
       }
     }
   }

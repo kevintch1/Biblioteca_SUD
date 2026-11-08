@@ -1,3 +1,4 @@
+
 import type { Request, Response } from "express";
 import {
     createCategory as insertCategory,
@@ -9,7 +10,9 @@ import {
 import { categoriaBodySchema } from "../schemas/categorias.schema.js";
 import type { z } from "zod";
 
-type IdParams = { id: string };
+type ValidatedIdParams = {
+    id: number;
+};
 
 async function handleDatabaseError(
     res: Response,
@@ -20,16 +23,23 @@ async function handleDatabaseError(
     } catch (error) {
         console.error(error);
         if (!res.headersSent) {
-            res.status(500).json({ error: "Error interno al consultar la base de datos." });
+            res.status(500).json({
+                error: "Error interno al consultar la base de datos.",
+            });
         }
     }
 }
 
-export async function getCategories(req: Request, res: Response): Promise<void> {
+export async function getCategories(
+    req: Request,
+    res: Response,
+): Promise<void> {
     const nombre = req.query.nombre;
 
     if (nombre !== undefined && typeof nombre !== "string") {
-        res.status(400).json({ error: "El filtro nombre debe ser un texto." });
+        res.status(400).json({
+            error: "El filtro nombre debe ser un texto.",
+        });
         return;
     }
 
@@ -40,53 +50,81 @@ export async function getCategories(req: Request, res: Response): Promise<void> 
     });
 }
 
-export async function getCategory(req: Request<IdParams>, res: Response): Promise<void> {
-    const id = Number(req.params.id);
+export async function getCategory(
+    req: Request,
+    res: Response,
+): Promise<void> {
+    const { id } = res.locals.paramsValidados as ValidatedIdParams;
 
     await handleDatabaseError(res, async () => {
         const category = await findCategoryById(id);
+
         if (!category) {
-            res.status(404).json({ error: "Categoría no encontrada." });
+            res.status(404).json({
+                error: "Categoría no encontrada.",
+            });
             return;
         }
+
         res.json(category);
     });
 }
 
 export async function createCategory(
-    req: Request<Record<string, string>, unknown, z.infer<typeof categoriaBodySchema>>,
+    req: Request<
+        Record<string, string>,
+        unknown,
+        z.infer<typeof categoriaBodySchema>
+    >,
     res: Response,
 ): Promise<void> {
     await handleDatabaseError(res, async () => {
-        res.status(201).json(await insertCategory(req.body.nombre));
+        res.status(201).json(
+            await insertCategory(req.body.nombre),
+        );
     });
 }
 
 export async function updateCategory(
-    req: Request<IdParams, unknown, z.infer<typeof categoriaBodySchema>>,
+    req: Request<
+        Record<string, string>,
+        unknown,
+        z.infer<typeof categoriaBodySchema>
+    >,
     res: Response,
 ): Promise<void> {
-    const id = Number(req.params.id);
+    const { id } = res.locals.paramsValidados as ValidatedIdParams;
 
     await handleDatabaseError(res, async () => {
         const category = await saveCategory(id, req.body.nombre);
+
         if (!category) {
-            res.status(404).json({ error: "Categoría no encontrada." });
+            res.status(404).json({
+                error: "Categoría no encontrada.",
+            });
             return;
         }
+
         res.json(category);
     });
 }
 
-export async function deleteCategory(req: Request<IdParams>, res: Response): Promise<void> {
-    const id = Number(req.params.id);
+export async function deleteCategory(
+    req: Request,
+    res: Response,
+): Promise<void> {
+    const { id } = res.locals.paramsValidados as ValidatedIdParams;
 
     await handleDatabaseError(res, async () => {
         const deletedRows = await removeCategory(id);
+
         if (deletedRows === 0) {
-            res.status(404).json({ error: "Categoría no encontrada." });
+            res.status(404).json({
+                error: "Categoría no encontrada.",
+            });
             return;
         }
+
         res.status(204).send();
     });
 }

@@ -16,7 +16,7 @@ import {
     crearUsuarioSchema,
     EliminarUsuarioSchema,
     obtenerUsuarioPorIdSchema,
-    obtenerUsuariosSchema
+    GetUserQuerySchema
 } from "../schemas/usuariosSchemas.js";
 
 const router = Router();
@@ -24,7 +24,7 @@ const router = Router();
 // Obtener todos los usuarios
 router.get(
     "/",
-    validateSchema(obtenerUsuariosSchema, "query"),
+    validateSchema(GetUserQuerySchema, "query"),
     obtenerUsuarios
 );
 
@@ -42,10 +42,10 @@ router.post(
     crearUsuario
 );
 
-// Actualizar un usuario
 router.put(
     "/:id",
-    validateSchema(actualizarUsuarioSchema, "body"),
+    validateSchema(obtenerUsuarioPorIdSchema, "params"),
+    validateSchema(actualizarUsuarioSchema.omit({ id: true }), "body"),
     actualizarUsuario
 );
 
