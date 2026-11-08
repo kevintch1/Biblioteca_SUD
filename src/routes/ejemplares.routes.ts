@@ -5,7 +5,7 @@ import { actualizaEjemplar, eliminarEjemplar, crearEjemplar, listarEjemplares, o
 
 const router = Router();
 
-router.get("/",validateSchema(getEjemplaresQuerySchema, "query"),listarEjemplares);
+router.get("/",listarEjemplares);
 router.get("/:id", validateSchema(ejemplarIdSchema, "params"), obtenerEjemplaresPorId);
 router.post("/", validateSchema(createEjemplarSchema), crearEjemplar);
 router.put("/:id", validateSchema(updateEjemplarSchema),actualizaEjemplar);

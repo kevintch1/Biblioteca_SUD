@@ -13,14 +13,7 @@ const doc = {
 
 const outputFile = "./src/swagger/swagger_output.json";
 
-const routes = [
-    "./src/routes/autores.routes.ts",
-    "./src/routes/categorias.routes.ts",
-    "./src/routes/ejemplares.routes.ts",
-    "./src/routes/libros.routes.ts",
-    "./src/routes/usuarios.routes.ts",
-    "./src/routes/route.ts",
-];
+const routes = ["./src/index.ts"];
 
 swaggerAutogen()(outputFile, routes, doc).then(() => {
     console.log("Documentación de Swagger generada exitosamente");

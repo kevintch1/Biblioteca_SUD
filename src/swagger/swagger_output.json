@@ -11,7 +11,245 @@
     "http"
   ],
   "paths": {
-    "/": {
+    "/api/categorias/": {
+      "get": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "nombre",
+            "in": "query",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          }
+        }
+      },
+      "post": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "nombre": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Bad Request"
+          }
+        }
+      }
+    },
+    "/api/categorias/{id}": {
+      "get": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      },
+      "put": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "nombre": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Bad Request"
+          }
+        }
+      },
+      "delete": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/autores/": {
+      "get": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "nombre",
+            "in": "query",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          }
+        }
+      },
+      "post": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "nombre": {
+                  "example": "any"
+                },
+                "nacionalidad": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Bad Request"
+          }
+        }
+      }
+    },
+    "/api/autores/{id}": {
+      "get": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      },
+      "put": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "nombre": {
+                  "example": "any"
+                },
+                "nacionalidad": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Bad Request"
+          }
+        }
+      },
+      "delete": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/libro-autor": {
       "get": {
         "description": "",
         "responses": {
@@ -23,9 +261,300 @@
           },
           "500": {
             "description": "Internal Server Error"
+          }
+        }
+      },
+      "post": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "id_libro": {
+                  "example": "any"
+                },
+                "id_autor": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created"
           },
-          "default": {
-            "description": ""
+          "400": {
+            "description": "Bad Request"
+          },
+          "409": {
+            "description": "Conflict"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/api/libro-autor/{id_libro}/{id_autor}": {
+      "delete": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "id_libro",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "id_autor",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/api/ejemplares/": {
+      "get": {
+        "tags": [
+          "Ejemplares"
+        ],
+        "summary": "Listar ejemplares",
+        "description": "Obtiene ejemplares con paginación y filtro opcional por estado.",
+        "parameters": [
+          {
+            "name": "estado",
+            "in": "query",
+            "description": "Estado de los ejemplares que se desean consultar",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "Disponible",
+              "Prestado"
+            ]
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Página solicitada. Debe ser un enetero positivo.",
+            "required": false,
+            "type": "integer",
+            "minimum": 1,
+            "default": 1
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Cantidad máxima de ejemplares por página.",
+            "required": false,
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100,
+            "default": 10
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Listado obtenido. La respuesta contiene data y pagination."
+          },
+          "400": {
+            "description": "Estado, página o límite inválidos."
+          },
+          "500": {
+            "description": "Error al consultar los ejemplares."
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Ejemplares"
+        ],
+        "summary": "Crear un ejemplar",
+        "description": "Registra un ejemplar físico de un libro existente.",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "description": "Datos del nuevo ejemplar.",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "id_libro": {
+                  "type": "number",
+                  "example": 1
+                },
+                "estado": {
+                  "type": "string",
+                  "example": "Disponible"
+                }
+              },
+              "required": [
+                "id_libro"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Ejemplar creado correctamente."
+          },
+          "400": {
+            "description": "Los datos enviados son inválidos."
+          },
+          "422": {
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "description": "Error interno al crear el ejemplar."
+          }
+        }
+      }
+    },
+    "/api/ejemplares/{id}": {
+      "get": {
+        "tags": [
+          "Ejemplares"
+        ],
+        "summary": "Obtener un ejemplar por ID",
+        "description": "Busca un ejemplar específico mediante su identificador.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "integer",
+            "description": "ID del ejemplar. Debe ser un entero positivo.",
+            "minimum": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Ejemplar encontrado."
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Ejemplares"
+        ],
+        "summary": "Actualizar un ejemplar",
+        "description": "Actualiza el libro asociado y el estado de un ejemplar.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "integer",
+            "description": "ID del ejemplar que se desea actualizar.",
+            "minimum": 1
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "description": "Datos del nuevo ejemplar.",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "id_libro": {
+                  "type": "number",
+                  "example": 1
+                },
+                "estado": {
+                  "type": "string",
+                  "example": "Disponible"
+                }
+              },
+              "required": [
+                "id_libro"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Ejemplar actualizado correctamente."
+          },
+          "400": {
+            "description": "ID o datos inválidos, o el libro indicado no existe."
+          },
+          "404": {
+            "description": "Ejemplar no encontrado."
+          },
+          "500": {
+            "description": "Error interno al actualizar el ejemplar."
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Ejemplares"
+        ],
+        "summary": "Eliminar un ejemplar",
+        "description": "Elimina un ejemplar si no tiene préstamos registrados.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "integer",
+            "description": "ID del ejemplar que se desea eliminar.",
+            "minimum": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Ejemplar eliminado correctamente."
+          },
+          "400": {
+            "description": "El ID debe ser un entero positivo."
+          },
+          "404": {
+            "description": "Ejemplar no encontrado."
+          },
+          "409": {
+            "description": "No se puede eliminar porque tiene préstamos registrados."
+          },
+          "500": {
+            "description": "Error interno al eliminar el ejemplar."
+          }
+        }
+      }
+    },
+    "/api/usuarios/": {
+      "get": {
+        "description": "",
+        "responses": {
+          "400": {
+            "description": "Bad Request"
           }
         }
       },
@@ -58,16 +587,13 @@
           "400": {
             "description": "Bad Request"
           },
-          "422": {
-            "description": "Unprocessable Entity"
-          },
           "500": {
             "description": "Internal Server Error"
           }
         }
       }
     },
-    "/{id}": {
+    "/api/usuarios/{id}": {
       "get": {
         "description": "",
         "parameters": [
@@ -150,17 +676,11 @@
           "200": {
             "description": "OK"
           },
-          "204": {
-            "description": "No Content"
-          },
           "400": {
             "description": "Bad Request"
           },
           "404": {
             "description": "Not Found"
-          },
-          "409": {
-            "description": "Conflict"
           },
           "500": {
             "description": "Internal Server Error"
@@ -168,15 +688,12 @@
         }
       }
     },
-    "/libro-autor": {
+    "/api/libros/": {
       "get": {
         "description": "",
         "responses": {
           "200": {
             "description": "OK"
-          },
-          "400": {
-            "description": "Bad Request"
           },
           "500": {
             "description": "Internal Server Error"
@@ -192,10 +709,16 @@
             "schema": {
               "type": "object",
               "properties": {
-                "id_libro": {
+                "titulo": {
                   "example": "any"
                 },
-                "id_autor": {
+                "editorial": {
+                  "example": "any"
+                },
+                "anio_publicacion": {
+                  "example": "any"
+                },
+                "id_categoria": {
                   "example": "any"
                 }
               }
@@ -209,27 +732,89 @@
           "400": {
             "description": "Bad Request"
           },
-          "409": {
-            "description": "Conflict"
-          },
           "500": {
             "description": "Internal Server Error"
           }
         }
       }
     },
-    "/libro-autor/{id_libro}/{id_autor}": {
-      "delete": {
+    "/api/libros/{id}": {
+      "get": {
         "description": "",
         "parameters": [
           {
-            "name": "id_libro",
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      },
+      "put": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
             "in": "path",
             "required": true,
             "type": "string"
           },
           {
-            "name": "id_autor",
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "titulo": {
+                  "example": "any"
+                },
+                "editorial": {
+                  "example": "any"
+                },
+                "anio_publicacion": {
+                  "example": "any"
+                },
+                "id_categoria": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      },
+      "delete": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
             "in": "path",
             "required": true,
             "type": "string"
